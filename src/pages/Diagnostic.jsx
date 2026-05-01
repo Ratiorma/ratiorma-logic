@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import VideoInput from '@/components/diagnostic/VideoInput';
-import DiagnosticResult from '@/components/diagnostic/DiagnosticResult';
-import { extractVideoId, fetchVideoStats } from '@/lib/youtubeApi';
-import { calculateCVR, determineRank } from '@/lib/rankingEngine';
-import { generateAnalysis } from '@/lib/analysisGenerator';
-import { isComedyContent } from '@/lib/contentFilter';
+import VideoInput from './../components/diagnostic/VideoInput';
+import DiagnosticResult from './../components/diagnostic/DiagnosticResult';
+import { extractVideoId, fetchVideoStats } from './../lib/youtubeApi';
+import { calculateCVR, determineRank } from './../lib/rankingEngine';
+import { generateAnalysis } from './../lib/analysisGenerator';
+import { isComedyContent } from './../lib/contentFilter';
 
 export default function Diagnostic() {
   const [isLoading, setIsLoading] = useState(false);
