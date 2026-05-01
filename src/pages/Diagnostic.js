@@ -49,23 +49,23 @@ export default function Diagnostic() {
 
   return (
     <div className="min-h-screen bg-background relative overflow-hidden">
-      {/* Ambient Background */}
+      
       <div className="fixed inset-0 pointer-events-none">
         <div className="absolute top-0 left-1/4 w-96 h-96 bg-primary/5 rounded-full blur-3xl" />
         <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-accent/5 rounded-full blur-3xl" />
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/3 rounded-full blur-[100px]" />
       </div>
 
-      {/* Content */}
+      
       <div className="relative z-10 max-w-3xl mx-auto px-4 md:px-6 py-12 md:py-20">
-        {/* Header */}
+        
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
           className="text-center mb-12"
         >
-          {/* Logo Mark */}
+          
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-primary/20 to-accent/10 border border-primary/20 mb-6">
             <span className="text-2xl font-display font-bold text-primary">R</span>
           </div>
@@ -82,12 +82,12 @@ export default function Diagnostic() {
           </p>
         </motion.div>
 
-        {/* Input */}
+        
         <div className="mb-10">
-          <VideoInput onAnalyze={handleAnalyze} isLoading={isLoading} />
+          <VideoInput onAnalyze="{handleAnalyze}" isLoading="{isLoading}"/>
         </div>
 
-        {/* Error */}
+        
         {error && (
           <motion.div
             initial={{ opacity: 0, y: 10 }}
@@ -100,7 +100,7 @@ export default function Diagnostic() {
           </motion.div>
         )}
 
-        {/* Loading */}
+        
         {isLoading && (
           <motion.div
             initial={{ opacity: 0 }}
@@ -119,7 +119,7 @@ export default function Diagnostic() {
           </motion.div>
         )}
 
-        {/* Not Comedy Warning */}
+        
         {notComedy && !isLoading && (
           <motion.div
             initial={{ opacity: 0, y: 10 }}
@@ -143,14 +143,9 @@ export default function Diagnostic() {
           </motion.div>
         )}
 
-        {/* Result */}
+        
         {result && !isLoading && (
-          <DiagnosticResult
-            videoData={result.videoData}
-            cvr={result.cvr}
-            rank={result.rank}
-            analysis={result.analysis}
-          />
+          <DiagnosticResult videoData="{result.videoData}" cvr="{result.cvr}" rank="{result.rank}" analysis="{result.analysis}"/>
         )}
       </div>
     </div>
