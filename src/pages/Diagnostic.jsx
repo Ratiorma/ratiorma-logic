@@ -1,66 +1,26 @@
 import React, { useState } from 'react';
 import { extractVideoId, fetchVideoStats } from '../lib/youtubeApi';
 
-// Ratiorma流・相対的M-1評価アルゴリズム
+// Base44の優れた相対評価ロジックを完全再現
 const getDiagnosticResult = (viewCount, cvrStr) => {
   const cvr = parseFloat(cvrStr);
-  let rank, subtitle, analysis, gradient;
-
+  
   if (viewCount >= 1000000) {
-    if (cvr >= 1.0) {
-      rank = 'ユニコーン企業';
-      subtitle = 'Unicorn / M-1決勝レベル';
-      analysis = `${(viewCount / 10000).toFixed(0)}万再生というマジョリティへの圧倒的な浸透と、1%超えの熱狂を両立した稀有な資産です。大衆性とコアファンの熱量を併せ持ち、M-1決勝の舞台でも確実に観客を巻き込める「覇権」のポテンシャルを秘めています。`;
-      gradient = 'from-[#d4af37] via-[#e6a8d7] to-[#d4af37]'; // ゴールド×ローズピンク
-    } else {
-      rank = '不良債権';
-      subtitle = 'Non-Performing Loan / M-1・1回戦敗退レベル';
-      analysis = '再生数はメガヒット領域に達していますが、能動的なエンゲージメント（高評価）が伴っていません。アルゴリズムによる偶発的な露出が多く、コアファンの形成に至っていないため、ネタの本質的な「フック（掴み）」の再設計が急務です。';
-      gradient = 'from-gray-600 to-gray-800';
-    }
-  } else if (viewCount >= 100000) {
-    if (cvr >= 3.0) {
-      rank = 'ユニコーン企業';
-      subtitle = 'Unicorn / M-1決勝レベル';
-      analysis = '10万再生を超える広範なリーチを持ちながら、この驚異的なCVRを維持しているのは「刺さる層に極めて深く刺さっている」証拠です。この独自の熱狂を保ったままリーチを拡大できれば、一気に業界を席巻する大化け銘柄となります。';
-      gradient = 'from-[#d4af37] via-[#e6a8d7] to-[#d4af37]';
-    } else if (cvr >= 0.8) {
-      rank = '優良事業';
-      subtitle = 'Cash Cow / M-1・準々決勝～準決勝レベル';
-      analysis = '再生数とエンゲージメントのバランスが美しく取れた堅実な優良銘柄です。視聴者の信頼が継続的に蓄積されており、賞レースでも確実に結果を残す地力があります。さらなる飛躍には、初見の観客を惹きつける「爆発力」のスパイスが必要です。';
-      gradient = 'from-[#d4af37] to-[#b8952d]';
-    } else {
-      rank = '不良債権';
-      subtitle = 'Non-Performing Loan / M-1・1回戦敗退レベル';
-      analysis = '一定の再生数は獲得していますが、視聴者の心を動かす決定打に欠けている状態です。「見られる」から「深く評価される」フェーズへ移行するための、ターゲット層の見直しと戦略的テコ入れが推奨されます。';
-      gradient = 'from-gray-600 to-gray-800';
-    }
-  } else {
-    // 10万再生未満（アーリーステージ）
-    if (cvr >= 5.0) {
-      rank = 'ユニコーン企業';
-      subtitle = 'Unicorn / M-1決勝レベル';
-      analysis = '再生数こそ発展途上ですが、触れた視聴者を確実に虜にする異常なまでの引力（CVR 5%超）を持っています。このコアな熱狂を種火として、適切な露出マーケティングを行えば、爆発的な成長を見せるダイヤの原石です。';
-      gradient = 'from-[#d4af37] via-[#e6a8d7] to-[#d4af37]';
-    } else if (cvr >= 3.0) {
-      rank = '優良事業';
-      subtitle = 'Cash Cow / M-1・準々決勝～準決勝レベル';
-      analysis = '高いエンゲージメント率を誇り、特定のターゲットへの訴求力は申し分ありません。ニッチな層に深く突き刺さる「独自の世界観」が正しく評価されている証左です。';
-      gradient = 'from-[#d4af37] to-[#b8952d]';
-    } else if (cvr >= 1.0) {
-      rank = '損益分岐点';
-      subtitle = 'Break-Even Point / M-1・2回戦・3回戦レベル';
-      analysis = '標準的なエンゲージメントを獲得しており、基礎的な実力は市場に証明されています。ここから上位層へ抜け出すためには、他との明確な差別化（USP）と、ネタ後半の展開力が鍵となります。';
-      gradient = 'from-[#b8c6db] to-[#f5f7fa] text-gray-800'; // シルバー系
-    } else {
-      rank = '不良債権';
-      subtitle = 'Non-Performing Loan / M-1・1回戦敗退レベル';
-      analysis = '現時点では市場からの能動的な評価を得られていない厳しい状態です。小手先の修正ではなく、誰に何を届けるのかという「コンセプト」の根本的な再定義が必要です。';
-      gradient = 'from-gray-600 to-gray-800';
-    }
+    if (cvr >= 1.5) return { icon: '👑', rank: 'ユニコーン企業', sub: 'Unicorn / M-1決勝レベル', label: 'メガヒット領域（100万再生超）', text: `${(viewCount/10000).toFixed(0)}万再生の到達圏において、CVR ${cvr}%は驚異的な熱狂度。マジョリティへの浸透とコア層の獲得を両立した稀有な資産である。` };
+    if (cvr >= 0.8) return { icon: '💎', rank: '優良銘柄', sub: 'Blue Chip / M-1準決勝レベル', label: 'メガヒット領域（100万再生超）', text: `${(viewCount/10000).toFixed(0)}万再生の到達圏において、CVR ${cvr}%は安定的かつ優良な水準を示している。視聴者の共感と信頼が継続的に蓄積されており、優良銘柄としての堅実な成長ポテンシャルを備える。コンテンツの本質的な価値が市場に正しく評価されている証左である。` };
+    return { icon: '⚠️', rank: '要テコ入れ', sub: 'Need Restructuring / M-1準々決勝レベル', label: 'メガヒット領域（100万再生超）', text: '再生数はメガヒット領域にあるが、能動的なアクション率がやや低い。幅広い層にリーチしている分、コアファンへの転換導線（フック）の強化が求められる。' };
+  } 
+  
+  if (viewCount >= 100000) {
+    if (cvr >= 3.0) return { icon: '👑', rank: 'ユニコーン企業', sub: 'Unicorn / M-1決勝レベル', label: 'ミドルヒット領域（10万再生超）', text: '10万再生を超えながらこの高CVRを維持している点は高く評価できる。刺さる層に極めて深く刺さっており、大化けするポテンシャルを秘めている。' };
+    if (cvr >= 0.9) return { icon: '💎', rank: '優良銘柄', sub: 'Blue Chip / M-1準決勝レベル', label: 'ミドルヒット領域（10万再生超）', text: '再生数とエンゲージメントのバランスが取れた堅実な優良銘柄。ここからさらに上位層へ抜け出すための「爆発力」が次の課題となる。' };
+    return { icon: '📉', rank: '不良債権', sub: 'Non-Performing Loan / M-1 2〜3回戦レベル', label: 'ミドルヒット領域（10万再生超）', text: '一定の露出は獲得しているが、視聴者の心を動かす決定打に欠ける。「見られる」から「評価される」フェーズへの移行が必要。' };
   }
 
-  return { rank, subtitle, analysis, gradient };
+  // 10万再生未満
+  if (cvr >= 5.0) return { icon: '🔥', rank: '超優良ベンチャー', sub: 'High-Growth Startup / M-1準決勝レベル', label: 'アーリーステージ（10万再生未満）', text: '再生数こそ発展途上だが、触れた視聴者を虜にする異常な引力を持つ。適切なマーケティングで一気に跳ねるダイヤの原石。' };
+  if (cvr >= 1.5) return { icon: '🌱', rank: '損益分岐点到達', sub: 'Break-Even / M-1 3回戦レベル', label: 'アーリーステージ（10万再生未満）', text: '標準以上のエンゲージメントを獲得しており、基礎的な実力は証明されている。他との明確な差別化（USP）が今後の鍵。' };
+  return { icon: '📉', rank: '不良債権', sub: 'Non-Performing Loan / M-1 1回戦敗退レベル', label: 'アーリーステージ（10万再生未満）', text: '現時点では市場からの能動的な評価を得られていない。ターゲット層とネタのコンセプトの根本的な再定義が急務。' };
 };
 
 export default function Diagnostic() {
@@ -86,9 +46,8 @@ export default function Diagnostic() {
     setLoading(true);
     try {
       const stats = await fetchVideoStats(videoId);
-      // Ratiorma流：純粋な「高評価」のみをエンゲージメントとして抽出
-      const cvr = stats.viewCount > 0 ? ((stats.likeCount / stats.viewCount) * 100).toFixed(2) : 0;
-      
+      // Base44の正確なロジック：高評価のみをエンゲージメントとする
+      const cvr = stats.viewCount > 0 ? ((stats.likeCount / stats.viewCount) * 100).toFixed(3) : 0;
       const diagnosis = getDiagnosticResult(stats.viewCount, cvr);
       setResult({ ...stats, cvr, diagnosis });
     } catch (err) {
@@ -98,120 +57,118 @@ export default function Diagnostic() {
     }
   };
 
-  // X（旧Twitter）へのシェア用URL生成
-  const shareToX = () => {
-    if (!result) return;
-    const text = encodeURIComponent(
-      `あなたの漫才のエンゲージメントCVRは ${result.cvr}%（${result.diagnosis.rank}）でした。\n\n【Ratiorma 戦略分析】\n${result.diagnosis.subtitle}\n\n#Ratiorma漫才解析`
-    );
-    const shareUrl = `https://twitter.com/intent/tweet?text=${text}`;
-    window.open(shareUrl, '_blank');
-  };
-
   return (
-    <div className="min-h-screen bg-[#050505] text-gray-100 p-4 md:p-8 font-serif selection:bg-[#e6a8d7] selection:text-black">
+    <div className="min-h-screen bg-[#0a0a0a] text-gray-200 font-serif p-4 md:p-8">
       <div className="max-w-4xl mx-auto space-y-12 mt-8">
         
-        {/* ヘッダーエリア */}
-        <div className="text-center space-y-3">
-          <h1 className="text-5xl md:text-6xl font-black bg-clip-text text-transparent bg-gradient-to-r from-[#d4af37] via-[#e6a8d7] to-[#d4af37] tracking-widest drop-shadow-lg">
+        {/* ヘッダー */}
+        <div className="text-center space-y-2">
+          <h1 className="text-4xl md:text-5xl font-bold text-[#d4af37] tracking-widest font-sans">
             Ratiorma
           </h1>
-          <p className="text-[#a8a8a8] tracking-[0.3em] text-sm md:text-base uppercase">
-            M-1 Engagement CVR Diagnostics
+          <p className="text-gray-400 tracking-[0.2em] text-sm font-sans uppercase">
+            Engagement CVR Diagnostics
+          </p>
+          <p className="text-gray-500 text-xs mt-4 max-w-lg mx-auto">
+            YouTube動画のエンゲージメントCVRを独自のM-1相対評価アルゴリズムで診断し、戦略的分析レポートを生成します。
           </p>
         </div>
 
         {/* 入力エリア */}
-        <div className="bg-[#0f0f0f] p-2 rounded-2xl border border-[#d4af37]/20 shadow-[0_0_30px_rgba(212,175,55,0.05)]">
-          <div className="flex flex-col md:flex-row gap-2">
-            <input
-              type="text"
-              placeholder="YouTube URL（漫才・ネタ動画）をペースト..."
-              value={url}
-              onChange={(e) => setUrl(e.target.value)}
-              className="flex-1 bg-[#1a1a1a] border border-gray-800 rounded-xl px-6 py-4 text-white font-sans focus:outline-none focus:border-[#e6a8d7]/50 transition-colors placeholder-gray-600"
-            />
-            <button
-              onClick={handleAnalyze}
-              disabled={loading}
-              className="bg-gradient-to-r from-[#d4af37] to-[#b8952d] text-black px-10 py-4 rounded-xl font-bold tracking-widest hover:opacity-90 disabled:opacity-50 transition-all whitespace-nowrap shadow-lg shadow-[#d4af37]/20"
-            >
-              {loading ? '分析中...' : '診断開始'}
-            </button>
-          </div>
+        <div className="bg-[#141414] p-3 rounded-xl border border-gray-800 shadow-lg flex flex-col md:flex-row gap-3">
+          <input
+            type="text"
+            placeholder="YouTube URL..."
+            value={url}
+            onChange={(e) => setUrl(e.target.value)}
+            className="flex-1 bg-[#1f1f1f] border border-gray-700 rounded-lg px-4 py-3 text-white font-sans focus:outline-none focus:border-[#d4af37] transition-colors"
+          />
+          <button
+            onClick={handleAnalyze}
+            disabled={loading}
+            className="bg-[#d4af37] text-black px-8 py-3 rounded-lg font-bold hover:bg-[#ebd488] disabled:opacity-50 transition-colors whitespace-nowrap font-sans flex items-center justify-center gap-2"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+            {loading ? '分析中...' : '診断開始'}
+          </button>
         </div>
-        {error && <p className="text-rose-400 text-center font-bold">{error}</p>}
+        {error && <p className="text-red-400 text-center font-bold text-sm">{error}</p>}
 
-        {/* 診断結果出力エリア */}
+        {/* 診断結果エリア（Base44デザイン完全踏襲） */}
         {result && (
-          <div className="space-y-8 animate-fade-in-up">
-            
-            {/* ランク＆称号エリア（アイキャッチ） */}
-            <div className={`p-10 rounded-2xl text-center bg-gradient-to-b ${result.diagnosis.gradient} shadow-2xl relative overflow-hidden group`}>
-              {/* 装飾的な背景エフェクト */}
-              <div className="absolute inset-0 bg-black/40 group-hover:bg-black/30 transition-colors"></div>
-              
-              <div className="relative z-10">
-                <p className="text-sm font-bold tracking-[0.2em] text-white/80 mb-4 uppercase">
-                  Diagnostic Result
-                </p>
-                <h2 className="text-5xl md:text-7xl font-black text-white mb-2 drop-shadow-md">
+          <div className="space-y-6 animate-fade-in-up">
+            <div className="text-center">
+              <p className="text-[#d4af37] tracking-[0.3em] text-xs uppercase font-sans mb-6">Diagnostic Report</p>
+            </div>
+
+            {/* 動画情報（サムネイル追加） */}
+            <div className="flex flex-col md:flex-row gap-6 items-start mb-8">
+              <div className="w-full md:w-1/2 rounded-xl overflow-hidden shadow-2xl border border-gray-800">
+                <img src={result.thumbnail} alt={result.title} className="w-full h-auto object-cover" />
+              </div>
+              <div className="w-full md:w-1/2 space-y-3">
+                <h2 className="text-xl md:text-2xl font-bold text-white leading-snug">{result.title}</h2>
+                <div className="text-gray-400 text-sm space-y-1 font-sans">
+                  <p>Ratiorma Analysis Engine</p>
+                  <p>データ取得完了</p>
+                </div>
+              </div>
+            </div>
+
+            {/* ランクバッジ */}
+            <div className="flex justify-center mb-8 relative">
+              <div className="bg-[#121629] border border-[#2a3b75] px-16 py-8 rounded-2xl text-center shadow-[0_0_30px_rgba(42,59,117,0.3)] z-10">
+                <div className="text-4xl mb-2">{result.diagnosis.icon}</div>
+                <h3 className="text-3xl md:text-4xl font-bold text-blue-200 tracking-wider mb-2">
                   【{result.diagnosis.rank}】
-                </h2>
-                <p className="text-lg md:text-xl font-medium text-white/90 tracking-widest font-sans">
-                  {result.diagnosis.subtitle}
+                </h3>
+                <p className="text-gray-400 text-sm tracking-widest font-sans italic">
+                  {result.diagnosis.sub}
                 </p>
               </div>
             </div>
 
-            {/* 数値データエリア */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="bg-[#0f0f0f] border border-gray-800 p-6 rounded-2xl text-center flex flex-col justify-center">
-                <p className="text-gray-500 text-xs tracking-widest mb-2">確定再生回数</p>
-                <p className="text-3xl font-bold font-sans text-gray-200">
-                  {result.viewCount.toLocaleString()}<span className="text-sm text-gray-500 ml-1">回</span>
-                </p>
+            <div className="text-center mb-6">
+              <span className="bg-[#1f1f1f] border border-[#d4af37]/30 text-[#d4af37] px-6 py-2 rounded-full text-xs tracking-widest">
+                {result.diagnosis.label}
+              </span>
+            </div>
+
+            {/* 数値データ4連 */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="bg-[#141414] border border-gray-800 p-5 rounded-xl text-center">
+                <p className="text-gray-500 text-xs tracking-widest mb-3 font-sans">👁 確定再生回数</p>
+                <p className="text-2xl font-bold text-white font-sans">{result.viewCount.toLocaleString()}<span className="text-xs text-gray-500 ml-1 font-serif">回</span></p>
               </div>
-              <div className="bg-[#0f0f0f] border border-gray-800 p-6 rounded-2xl text-center flex flex-col justify-center">
-                <p className="text-gray-500 text-xs tracking-widest mb-2">高評価（エンゲージメント）</p>
-                <p className="text-3xl font-bold font-sans text-gray-200">
-                  {result.likeCount.toLocaleString()}<span className="text-sm text-gray-500 ml-1">件</span>
-                </p>
+              <div className="bg-[#141414] border border-gray-800 p-5 rounded-xl text-center">
+                <p className="text-gray-500 text-xs tracking-widest mb-3 font-sans">♡ いいね数</p>
+                <p className="text-2xl font-bold text-white font-sans">{result.likeCount.toLocaleString()}<span className="text-xs text-gray-500 ml-1 font-serif">件</span></p>
               </div>
-              <div className="bg-[#151515] border border-[#d4af37]/30 p-6 rounded-2xl text-center flex flex-col justify-center relative overflow-hidden">
-                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#d4af37] to-[#e6a8d7]"></div>
-                <p className="text-[#d4af37] text-xs font-bold tracking-widest mb-2">エンゲージメントCVR</p>
-                <p className="text-4xl font-black font-sans text-white">
-                  {result.cvr}<span className="text-xl text-[#d4af37] ml-1">%</span>
-                </p>
+              <div className="bg-[#141414] border border-gray-800 p-5 rounded-xl text-center shadow-[0_0_15px_rgba(212,175,55,0.1)] relative overflow-hidden">
+                <div className="absolute top-0 left-0 w-full h-1 bg-[#d4af37]"></div>
+                <p className="text-gray-300 text-xs tracking-widest mb-3 font-sans">↗ エンゲージメント CVR</p>
+                <p className="text-3xl font-bold text-white font-sans">{result.cvr}<span className="text-sm text-gray-500 ml-1 font-serif">%</span></p>
+              </div>
+              <div className="bg-[#141414] border border-gray-800 p-5 rounded-xl text-center">
+                <p className="text-gray-500 text-xs tracking-widest mb-3 font-sans">💬 コメント数</p>
+                <p className="text-2xl font-bold text-white font-sans">{result.commentCount.toLocaleString()}<span className="text-xs text-gray-500 ml-1 font-serif">件</span></p>
               </div>
             </div>
 
-            {/* 戦略分析レポート（コンサルタント視点） */}
-            <div className="bg-[#0f0f0f] p-8 rounded-2xl border border-gray-800 relative">
-              <div className="absolute -top-3 left-8 bg-[#050505] px-4">
-                <span className="text-[#e6a8d7] text-sm font-bold tracking-widest">ラティオルマ・戦略分析</span>
+            {/* 戦略分析レポート */}
+            <div className="bg-[#141414] border border-[#d4af37]/30 p-8 rounded-xl mt-8">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="bg-[#d4af37]/20 p-2 rounded-lg">
+                  <svg className="w-5 h-5 text-[#d4af37]" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+                </div>
+                <div>
+                  <h4 className="text-lg font-bold text-white tracking-widest">ラティオルマ・戦略分析</h4>
+                  <p className="text-gray-500 text-xs font-sans italic">Ratiorma Strategic Analysis</p>
+                </div>
               </div>
-              <p className="text-gray-300 leading-loose text-base md:text-lg mt-4">
-                {result.diagnosis.analysis}
+              <p className="text-gray-300 leading-loose text-sm md:text-base tracking-wide">
+                {result.diagnosis.text}
               </p>
-            </div>
-
-            {/* シェアボタン群 */}
-            <div className="flex justify-center pt-4">
-              <button
-                onClick={shareToX}
-                className="group relative flex items-center gap-3 bg-black border border-[#d4af37]/50 px-8 py-4 rounded-full overflow-hidden hover:border-[#d4af37] transition-all"
-              >
-                <div className="absolute inset-0 bg-gradient-to-r from-[#d4af37]/10 to-[#e6a8d7]/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                <svg className="w-5 h-5 fill-white relative z-10" viewBox="0 0 24 24">
-                  <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
-                </svg>
-                <span className="text-white font-bold tracking-wider relative z-10 text-sm">
-                  診断結果をポストする
-                </span>
-              </button>
             </div>
 
           </div>
