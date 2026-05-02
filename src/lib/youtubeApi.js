@@ -5,7 +5,8 @@ export const extractVideoId = (url) => {
 };
 
 export const fetchVideoStats = async (videoId) => {
-  const API_KEY = 'AIzaSyDAQEdcQfSbmTo28VBithf80XjfgaSK7eM';
+  // ★ここにあなたのAPIキーを入れてください
+  const API_KEY = 'AIzaSyDAQEdcQfSbmTo28VBithf80XjfgaSK7eM'; 
 
   try {
     const response = await fetch(
@@ -24,6 +25,9 @@ export const fetchVideoStats = async (videoId) => {
     const video = data.items[0];
     return {
       title: video.snippet.title,
+      description: video.snippet.description || '',
+      tags: video.snippet.tags || [],
+      categoryId: video.snippet.categoryId,
       thumbnail: video.snippet.thumbnails.high.url,
       viewCount: parseInt(video.statistics.viewCount || 0, 10),
       likeCount: parseInt(video.statistics.likeCount || 0, 10),
