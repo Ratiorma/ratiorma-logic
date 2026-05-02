@@ -25,15 +25,20 @@ const getDiagnosticResult = (viewCount, cvrStr) => {
   return { icon: '📉', rank: '不良債権', sub: 'Non-Performing Loan / M-1・1回戦敗退レベル', label: 'アーリーステージ（10万再生未満）', text: `残念ながら、現時点では市場からの能動的な評価を全く得られておらず、コンセプトレベルでの深刻なエラーが起きている。現状のまま回数を重ねてもサンクコスト（埋没費用）が膨らむばかりである。客観的なフィードバックを徹底的に収集し、「自分たちがやりたいお笑い」と「市場が求めているお笑い」の乖離を冷静に分析・すり合わせるという、痛みを伴う改革が必要不可欠だ。` };
 };
 
-// お笑い・漫才フィルター判定
+// 【強固な防衛線】お笑い・漫才フィルター判定
 const isComedyVideo = (stats) => {
-  const keywords = ['漫才', 'M-1', 'お笑い', 'コント', 'お笑い芸人', 'グランプリ'];
-  const searchTarget = `${stats.title} ${stats.description} ${(stats.tags || []).join(' ')}`;
+  if (!stats) return true; // 万が一データ欠損時のフォールバック
+
+  const title = stats.title || '';
+  const desc = stats.description || '';
+  const tags = (stats.tags || []).join(' ');
+  const searchTarget = `${title} ${desc} ${tags}`.toLowerCase();
   
+  const keywords = ['漫才', 'm-1', 'm1', 'お笑い', 'コント', '芸人', 'グランプリ', '漫才師', 'ネタ', '賞レース'];
   const hasKeyword = keywords.some(kw => searchTarget.includes(kw));
-  const validCategory = stats.categoryId === '23' || stats.categoryId === '24';
   
-  return hasKeyword || validCategory;
+  // ザルだった「24（エンタメ）」を外し、「23（コメディ）」か「キーワードあり」のみ通過させる
+  return stats.categoryId === '23' || hasKeyword;
 };
 
 export default function Diagnostic() {
@@ -62,7 +67,7 @@ export default function Diagnostic() {
     try {
       const stats = await fetchVideoStats(videoId);
       
-      // フィルターチェック
+      // フィルターチェックで対象外ならエラー用の状態をセットして終了
       if (!isComedyVideo(stats)) {
         setResult({ isExcluded: true });
         return;
@@ -168,7 +173,6 @@ export default function Diagnostic() {
               <div className="bg-[#141414] border border-[#d4af37]/40 p-10 md:p-14 rounded-2xl shadow-[0_0_30px_rgba(212,175,55,0.1)] text-center relative overflow-hidden group">
                 <div className="absolute inset-0 bg-gradient-to-b from-[#d4af37]/5 to-transparent opacity-50"></div>
                 
-                {/* 警告アイコン（上品なデザイン） */}
                 <svg className="w-12 h-12 text-[#d4af37] mx-auto mb-6 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                 </svg>
