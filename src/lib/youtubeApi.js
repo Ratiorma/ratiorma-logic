@@ -8,33 +8,33 @@ export const extractVideoId = (url) => {
 };
 
 export const fetchVideoStats = async (videoId) => {
-  // 強制的に直接書き込んだキーを使用します
   const keyToUse = API_KEY;
 
-  if (!keyToUse || keyToUse === 'AIzaSyDAQEdcQfSbmTo28VBithf80XjfgaSK7eM') {
-    throw new Error('APIキーが正しく入力されていません。');
+  try {
+    const response = await fetch(
+      `[https://www.googleapis.com/youtube/v3/videos?part=statistics,snippet&id=$](https://www.googleapis.com/youtube/v3/videos?part=statistics,snippet&id=$){videoId}&key=${keyToUse}`
+    );
+    const data = await response.json();
+
+    if (!response.ok) {
+      // Googleからの「本当の拒否理由」を画面に強制表示させます
+      throw new Error(`Googleエラー詳細: ${data.error?.message || response.statusText} (コード: ${response.status})`);
+    }
+
+    if (!data.items || data.items.length === 0) {
+      throw new Error('動画が見つかりません。URLが間違っているか、非公開動画です。');
+    }
+
+    const video = data.items[0];
+    return {
+      title: video.snippet.title,
+      thumbnail: video.snippet.thumbnails.high.url,
+      viewCount: parseInt(video.statistics.viewCount || 0, 10),
+      likeCount: parseInt(video.statistics.likeCount || 0, 10),
+      commentCount: parseInt(video.statistics.commentCount || 0, 10),
+    };
+  } catch (err) {
+    // ネットワーク自体のエラーか、上で捕まえたエラーを画面に投げます
+    throw new Error(err.message);
   }
-
-  const response = await fetch(
-    `https://www.googleapis.com/youtube/v3/videos?part=statistics,snippet&id=${videoId}&key=${keyToUse}`
-  );
-
-  if (!response.ok) {
-    throw new Error('YouTubeサーバーとの通信に失敗しました。');
-  }
-
-  const data = await response.json();
-
-  if (!data.items || data.items.length === 0) {
-    throw new Error('動画が見つかりません。URLを確認してください。');
-  }
-
-  const video = data.items[0];
-  return {
-    title: video.snippet.title,
-    thumbnail: video.snippet.thumbnails.high.url,
-    viewCount: parseInt(video.statistics.viewCount || 0, 10),
-    likeCount: parseInt(video.statistics.likeCount || 0, 10),
-    commentCount: parseInt(video.statistics.commentCount || 0, 10),
-  };
 };
