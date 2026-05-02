@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { extractVideoId, fetchVideoStats } from '../lib/youtubeApi';
 
 // Ratiorma独自の相対評価ロジック
@@ -46,6 +46,32 @@ export default function Diagnostic() {
   const [result, setResult] = useState(null);
   const [error, setError] = useState('');
   const [copied, setCopied] = useState(false);
+
+  // ▼▼ 自動リサイズ用アンテナ追加 ▼▼
+  useEffect(() => {
+    const sendHeight = () => {
+      // 50pxの余裕を持たせて見切れを完全に防止
+      const height = document.documentElement.scrollHeight + 50; 
+      window.parent.postMessage({ type: 'resize', height: height }, '*');
+    };
+
+    // 初期ロード時に送信
+    sendHeight();
+
+    // DOM（画面の要素）が変化した時（結果が出た時）に自動で高さを再送信する監視カメラ
+    const resizeObserver = new ResizeObserver(() => {
+      sendHeight();
+    });
+    
+    if (document.body) {
+      resizeObserver.observe(document.body);
+    }
+
+    return () => {
+      resizeObserver.disconnect();
+    };
+  }, [result, error]);
+  // ▲▲ 追加ここまで ▲▲
 
   const handleAnalyze = async () => {
     setError('');
@@ -119,8 +145,8 @@ export default function Diagnostic() {
         `}
       </style>
 
-      <div className="min-h-screen bg-[#0a0a0a] text-gray-200 font-elegant p-4 md:p-8">
-        <div className="max-w-4xl mx-auto space-y-12 mt-8">
+      <div className="min-h-screen bg-[#0a0a0a] text-gray-200 font-elegant p-4 md:p-8 overflow-hidden">
+        <div className="max-w-4xl mx-auto space-y-12 mt-4 md:mt-8">
           
           <div className="text-center space-y-2">
             <div className="flex justify-center mb-6 animate-fade-in-up">
@@ -132,7 +158,6 @@ export default function Diagnostic() {
               </div>
             </div>
 
-            {/* ▼▼ タイトル変更：一目でわかるように変更 ▼▼ */}
             <h1 className="text-3xl md:text-4xl font-bold text-[#d4af37] tracking-widest flex flex-col items-center gap-2">
               <span className="text-4xl md:text-5xl">RATIORMA</span>
               <span className="text-lg md:text-2xl mt-1">漫才エンゲージメントCVR診断</span>
@@ -140,7 +165,6 @@ export default function Diagnostic() {
             <p className="text-gray-400 tracking-[0.2em] text-xs md:text-sm uppercase italic mt-3">
               M-1 Engagement CVR Diagnostics
             </p>
-            {/* ▲▲ タイトル変更 ここまで ▲▲ */}
             
             <div className="w-12 h-[1px] bg-gradient-to-r from-transparent via-[#d4af37]/50 to-transparent mx-auto mt-6 mb-4"></div>
 
@@ -181,7 +205,7 @@ export default function Diagnostic() {
                   対象外のコンテンツです
                 </h3>
                 <p className="text-[#d4af37]/80 text-sm md:text-base leading-loose max-w-2xl mx-auto font-sans tracking-wide">
-                  こちらの動画は漫才・お笑い関連動画として認識できませんでした。<br />
+                  こちらの動画は漫才・お笑い関連動画として認識できません。<br />
                   解析ロジック保護のため、M-1等の漫才動画のURLを入力してください。
                 </p>
               </div>
@@ -189,7 +213,7 @@ export default function Diagnostic() {
           )}
 
           {result && !result.isExcluded && (
-            <div className="space-y-6 animate-fade-in-up">
+            <div className="space-y-6 animate-fade-in-up pb-8">
               <div className="text-center">
                 <p className="text-[#d4af37] tracking-[0.3em] text-xs uppercase mb-6">Diagnostic Report</p>
               </div>
@@ -208,12 +232,12 @@ export default function Diagnostic() {
               </div>
 
               <div className="flex justify-center mb-8 relative">
-                <div className="bg-[#121629] border border-[#2a3b75] px-16 py-8 rounded-2xl text-center shadow-[0_0_30px_rgba(42,59,117,0.3)] z-10">
+                <div className="bg-[#121629] border border-[#2a3b75] px-16 py-8 rounded-2xl text-center shadow-[0_0_30px_rgba(42,59,117,0.3)] z-10 w-full md:w-auto">
                   <div className="text-4xl mb-2">{result.diagnosis.icon}</div>
-                  <h3 className="text-3xl md:text-4xl font-bold text-blue-200 tracking-wider mb-2">
+                  <h3 className="text-2xl md:text-4xl font-bold text-blue-200 tracking-wider mb-2">
                     【{result.diagnosis.rank}】
                   </h3>
-                  <p className="text-gray-400 text-sm tracking-widest italic">
+                  <p className="text-gray-400 text-xs md:text-sm tracking-widest italic">
                     {result.diagnosis.sub}
                   </p>
                 </div>
@@ -226,34 +250,34 @@ export default function Diagnostic() {
               </div>
 
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className="bg-[#141414] border border-gray-800 p-5 rounded-xl text-center hover:border-gray-600 transition-colors">
-                  <p className="text-gray-500 text-xs tracking-widest mb-3">👁 確定再生回数</p>
-                  <p className="text-2xl md:text-3xl font-bold text-white font-numbers">{result.viewCount.toLocaleString()}<span className="text-xs text-gray-500 ml-1">回</span></p>
+                <div className="bg-[#141414] border border-gray-800 p-4 md:p-5 rounded-xl text-center hover:border-gray-600 transition-colors">
+                  <p className="text-gray-500 text-[10px] md:text-xs tracking-widest mb-2 md:mb-3">👁 確定再生回数</p>
+                  <p className="text-xl md:text-3xl font-bold text-white font-numbers">{result.viewCount.toLocaleString()}<span className="text-xs text-gray-500 ml-1">回</span></p>
                 </div>
-                <div className="bg-[#141414] border border-gray-800 p-5 rounded-xl text-center hover:border-gray-600 transition-colors">
-                  <p className="text-gray-500 text-xs tracking-widest mb-3">♡ いいね数</p>
-                  <p className="text-2xl md:text-3xl font-bold text-white font-numbers">{result.likeCount.toLocaleString()}<span className="text-xs text-gray-500 ml-1">件</span></p>
+                <div className="bg-[#141414] border border-gray-800 p-4 md:p-5 rounded-xl text-center hover:border-gray-600 transition-colors">
+                  <p className="text-gray-500 text-[10px] md:text-xs tracking-widest mb-2 md:mb-3">♡ いいね数</p>
+                  <p className="text-xl md:text-3xl font-bold text-white font-numbers">{result.likeCount.toLocaleString()}<span className="text-xs text-gray-500 ml-1">件</span></p>
                 </div>
-                <div className="bg-[#141414] border border-gray-800 p-5 rounded-xl text-center shadow-[0_0_15px_rgba(212,175,55,0.1)] relative overflow-hidden group">
+                <div className="bg-[#141414] border border-gray-800 p-4 md:p-5 rounded-xl text-center shadow-[0_0_15px_rgba(212,175,55,0.1)] relative overflow-hidden group">
                   <div className="absolute top-0 left-0 w-full h-1 bg-[#d4af37]"></div>
                   <div className="absolute inset-0 bg-gradient-to-b from-[#d4af37]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                  <p className="text-[#d4af37] text-xs font-bold tracking-widest mb-3">↗ エンゲージメント CVR</p>
-                  <p className="text-3xl md:text-4xl font-bold text-white font-numbers">{result.cvr}<span className="text-sm text-gray-500 ml-1">%</span></p>
+                  <p className="text-[#d4af37] text-[10px] md:text-xs font-bold tracking-widest mb-2 md:mb-3">↗ エンゲージメント CVR</p>
+                  <p className="text-2xl md:text-4xl font-bold text-white font-numbers">{result.cvr}<span className="text-xs md:text-sm text-gray-500 ml-1">%</span></p>
                 </div>
-                <div className="bg-[#141414] border border-gray-800 p-5 rounded-xl text-center hover:border-gray-600 transition-colors">
-                  <p className="text-gray-500 text-xs tracking-widest mb-3">💬 コメント数</p>
-                  <p className="text-2xl md:text-3xl font-bold text-white font-numbers">{result.commentCount.toLocaleString()}<span className="text-xs text-gray-500 ml-1">件</span></p>
+                <div className="bg-[#141414] border border-gray-800 p-4 md:p-5 rounded-xl text-center hover:border-gray-600 transition-colors">
+                  <p className="text-gray-500 text-[10px] md:text-xs tracking-widest mb-2 md:mb-3">💬 コメント数</p>
+                  <p className="text-xl md:text-3xl font-bold text-white font-numbers">{result.commentCount.toLocaleString()}<span className="text-xs text-gray-500 ml-1">件</span></p>
                 </div>
               </div>
 
-              <div className="bg-[#141414] border border-[#d4af37]/30 p-8 rounded-xl mt-8 shadow-lg">
-                <div className="flex items-center gap-3 mb-6">
+              <div className="bg-[#141414] border border-[#d4af37]/30 p-6 md:p-8 rounded-xl mt-8 shadow-lg">
+                <div className="flex items-center gap-3 mb-4 md:mb-6">
                   <div className="bg-[#d4af37]/10 p-2 rounded-lg border border-[#d4af37]/20">
                     <svg className="w-5 h-5 text-[#d4af37]" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
                   </div>
                   <div>
-                    <h4 className="text-lg font-bold text-white tracking-widest">ラティオルマ・戦略分析</h4>
-                    <p className="text-gray-500 text-xs italic">Ratiorma Strategic Analysis</p>
+                    <h4 className="text-base md:text-lg font-bold text-white tracking-widest">ラティオルマ・戦略分析</h4>
+                    <p className="text-gray-500 text-[10px] md:text-xs italic">Ratiorma Strategic Analysis</p>
                   </div>
                 </div>
                 <p className="text-gray-300 leading-loose text-sm md:text-base tracking-wide whitespace-pre-wrap">
@@ -261,10 +285,10 @@ export default function Diagnostic() {
                 </p>
               </div>
 
-              <div className="flex flex-wrap justify-center gap-4 pt-6 pb-4">
+              <div className="flex flex-wrap justify-center gap-3 md:gap-4 pt-6 pb-4">
                 <button
                   onClick={shareToX}
-                  className="flex items-center gap-2 bg-[#141414] border border-gray-700 px-6 py-3 rounded-full hover:border-[#d4af37] hover:text-[#d4af37] transition-all text-gray-300 text-sm tracking-wider"
+                  className="flex items-center gap-2 bg-[#141414] border border-gray-700 px-5 md:px-6 py-3 rounded-full hover:border-[#d4af37] hover:text-[#d4af37] transition-all text-gray-300 text-xs md:text-sm tracking-wider"
                 >
                   <svg className="w-4 h-4 fill-currentColor" viewBox="0 0 24 24">
                     <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
@@ -274,7 +298,7 @@ export default function Diagnostic() {
 
                 <button
                   onClick={shareToLine}
-                  className="flex items-center gap-2 bg-[#141414] border border-[#06C755]/40 px-6 py-3 rounded-full hover:border-[#06C755] hover:bg-[#06C755]/5 transition-all text-[#06C755] text-sm tracking-wider"
+                  className="flex items-center gap-2 bg-[#141414] border border-[#06C755]/40 px-5 md:px-6 py-3 rounded-full hover:border-[#06C755] hover:bg-[#06C755]/5 transition-all text-[#06C755] text-xs md:text-sm tracking-wider"
                 >
                   <svg className="w-4 h-4 fill-currentColor" viewBox="0 0 24 24">
                      <path d="M24 10.304c0-5.369-5.383-9.738-12-9.738-6.616 0-12 4.369-12 9.738 0 4.814 3.96 8.904 9.404 9.608.371.077.868.238 1.002.544.122.28-.04.856-.123 1.205-.098.411-.476 1.884-.578 2.296-.134.542.612.87 1.05.589.626-.4 3.393-2.128 4.654-3.14 3.256-2.618 5.591-5.698 5.591-8.798" />
@@ -284,9 +308,9 @@ export default function Diagnostic() {
 
                 <button
                   onClick={copyToClipboard}
-                  className={`flex items-center gap-2 bg-[#141414] border px-6 py-3 rounded-full transition-all text-sm tracking-wider ${copied ? 'border-[#d4af37] text-[#d4af37] bg-[#d4af37]/10' : 'border-gray-700 text-gray-300 hover:border-gray-400'}`}
+                  className={`flex items-center gap-2 bg-[#141414] border px-5 md:px-6 py-3 rounded-full transition-all text-xs md:text-sm tracking-wider ${copied ? 'border-[#d4af37] text-[#d4af37] bg-[#d4af37]/10' : 'border-gray-700 text-gray-300 hover:border-gray-400'}`}
                 >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
                   {copied ? 'コピーしました！' : 'テキストをコピー'}
                 </button>
               </div>
