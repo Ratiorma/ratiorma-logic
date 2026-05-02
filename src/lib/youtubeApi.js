@@ -1,75 +1,40 @@
-const API_KEY = 'AIzaSyDAQEdcQfSbmTo28VBithf80XjfgaSK7eM';
+// ↓ここに直接APIキーを貼り付けます
+const API_KEY = 'あなたのAPIキーをここに貼り付けます';
 
-/**
- * Extract video ID from various YouTube URL formats
- */
-export function extractVideoId(url) {
-  if (!url) return null;
-  const trimmed = url.trim();
+export const extractVideoId = (url) => {
+  const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+  const match = url.match(regExp);
+  return (match && match[2].length === 11) ? match[2] : null;
+};
 
-  // Direct video ID (11 chars)
-  if (/^[a-zA-Z0-9_-]{11}$/.test(trimmed)) {
-    return trimmed;
+export const fetchVideoStats = async (videoId) => {
+  // 強制的に直接書き込んだキーを使用します
+  const keyToUse = import.meta.env?.VITE_YOUTUBE_API_KEY || API_KEY;
+
+  if (!keyToUse || keyToUse === 'あなたのAPIキーをここに貼り付けます') {
+    throw new Error('APIキーが正しく入力されていません。');
   }
 
-  const patterns = [
-    // Standard: youtube.com/watch?v=VIDEO_ID
-    /(?:youtube\.com\/watch\?.*v=)([a-zA-Z0-9_-]{11})/,
-    // Short: youtu.be/VIDEO_ID
-    /(?:youtu\.be\/)([a-zA-Z0-9_-]{11})/,
-    // Embed: youtube.com/embed/VIDEO_ID
-    /(?:youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/,
-    // Shorts: youtube.com/shorts/VIDEO_ID
-    /(?:youtube\.com\/shorts\/)([a-zA-Z0-9_-]{11})/,
-    // Live: youtube.com/live/VIDEO_ID
-    /(?:youtube\.com\/live\/)([a-zA-Z0-9_-]{11})/,
-    // v= anywhere
-    /[?&]v=([a-zA-Z0-9_-]{11})/,
-  ];
-
-  for (const pattern of patterns) {
-    const match = trimmed.match(pattern);
-    if (match) return match[1];
-  }
-
-  return null;
-}
-
-/**
- * Fetch video statistics from YouTube Data API v3
- */
-export async function fetchVideoStats(videoId) {
-  const url = `https://www.googleapis.com/youtube/v3/videos?part=statistics,snippet&id=${videoId}&key=${API_KEY}`;
-
-  const response = await fetch(url, {
-    cache: 'no-cache',
-    headers: { 'Cache-Control': 'no-cache' },
-  });
+  const response = await fetch(
+    `https://www.googleapis.com/youtube/v3/videos?part=statistics,snippet&id=${videoId}&key=${keyToUse}`
+  );
 
   if (!response.ok) {
-    throw new Error(`API Error: ${response.status}`);
+    throw new Error('YouTubeサーバーとの通信に失敗しました。');
   }
 
   const data = await response.json();
 
   if (!data.items || data.items.length === 0) {
-    throw new Error('動画が見つかりませんでした');
+    throw new Error('動画が見つかりません。URLを確認してください。');
   }
 
-  const item = data.items[0];
-  const stats = item.statistics;
-  const snippet = item.snippet;
-
+  const video = data.items[0];
   return {
-    title: snippet.title,
-    channelTitle: snippet.channelTitle,
-    publishedAt: snippet.publishedAt,
-    thumbnailUrl: snippet.thumbnails?.maxres?.url || snippet.thumbnails?.high?.url || snippet.thumbnails?.medium?.url,
-    description: snippet.description || '',
-    tags: snippet.tags || [],
-    categoryId: snippet.categoryId || '',
-    viewCount: parseInt(stats.viewCount, 10) || 0,
-    likeCount: parseInt(stats.likeCount, 10) || 0,
-    commentCount: parseInt(stats.commentCount, 10) || 0,
+    title: video.snippet.title,
+    thumbnail: video.snippet.thumbnails.high.url,
+    viewCount: parseInt(video.statistics.viewCount || 0, 10),
+    likeCount: parseInt(video.statistics.likeCount || 0, 10),
+    commentCount: parseInt(video.statistics.commentCount || 0, 10),
   };
-}
+};
