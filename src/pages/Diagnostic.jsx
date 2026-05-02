@@ -93,7 +93,7 @@ export default function Diagnostic() {
           <p className="text-gray-400 tracking-[0.2em] text-sm font-sans uppercase">
             Engagement CVR Diagnostics
           </p>
-          <p className="text-gray-500 text-xs mt-4 max-w-lg mx-auto">
+          <p className="text-gray-300 text-sm md:text-base leading-relaxed mt-6 max-w-xl mx-auto font-sans">
             YouTube動画のエンゲージメントCVRを独自のM-1相対評価アルゴリズムで診断し、戦略的分析レポートを生成します。
           </p>
         </div>
@@ -102,7 +102,7 @@ export default function Diagnostic() {
         <div className="bg-[#141414] p-3 rounded-xl border border-gray-800 shadow-lg flex flex-col md:flex-row gap-3">
           <input
             type="text"
-            placeholder="YouTube URL..."
+            placeholder="Youtube漫才動画のURLを入れて下さい。"
             value={url}
             onChange={(e) => setUrl(e.target.value)}
             className="flex-1 bg-[#1f1f1f] border border-gray-700 rounded-lg px-4 py-3 text-white font-sans focus:outline-none focus:border-[#d4af37] transition-colors"
