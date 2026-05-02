@@ -9,7 +9,7 @@ export const extractVideoId = (url) => {
 
 export const fetchVideoStats = async (videoId) => {
   // 強制的に直接書き込んだキーを使用します
-  const keyToUse = import.meta.env?.VITE_YOUTUBE_API_KEY || API_KEY;
+  const keyToUse = API_KEY;
 
   if (!keyToUse || keyToUse === 'AIzaSyDAQEdcQfSbmTo28VBithf80XjfgaSK7eM') {
     throw new Error('APIキーが正しく入力されていません。');
