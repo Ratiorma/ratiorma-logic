@@ -27,7 +27,7 @@ const getDiagnosticResult = (viewCount, cvrStr) => {
 
 // 【強固な防衛線】お笑い・漫才フィルター判定
 const isComedyVideo = (stats) => {
-  if (!stats) return true; // 万が一データ欠損時のフォールバック
+  if (!stats) return true;
 
   const title = stats.title || '';
   const desc = stats.description || '';
@@ -37,7 +37,6 @@ const isComedyVideo = (stats) => {
   const keywords = ['漫才', 'm-1', 'm1', 'お笑い', 'コント', '芸人', 'グランプリ', '漫才師', 'ネタ', '賞レース'];
   const hasKeyword = keywords.some(kw => searchTarget.includes(kw));
   
-  // ザルだった「24（エンタメ）」を外し、「23（コメディ）」か「キーワードあり」のみ通過させる
   return stats.categoryId === '23' || hasKeyword;
 };
 
@@ -67,7 +66,6 @@ export default function Diagnostic() {
     try {
       const stats = await fetchVideoStats(videoId);
       
-      // フィルターチェックで対象外ならエラー用の状態をセットして終了
       if (!isComedyVideo(stats)) {
         setResult({ isExcluded: true });
         return;
@@ -134,12 +132,15 @@ export default function Diagnostic() {
               </div>
             </div>
 
-            <h1 className="text-4xl md:text-5xl font-bold text-[#d4af37] tracking-widest">
-              Ratiorma
+            {/* ▼▼ タイトル変更：一目でわかるように変更 ▼▼ */}
+            <h1 className="text-3xl md:text-4xl font-bold text-[#d4af37] tracking-widest flex flex-col items-center gap-2">
+              <span className="text-4xl md:text-5xl">RATIORMA</span>
+              <span className="text-lg md:text-2xl mt-1">漫才エンゲージメントCVR診断</span>
             </h1>
-            <p className="text-gray-400 tracking-[0.2em] text-xs md:text-sm uppercase italic mt-2">
-              Engagement CVR Diagnostics
+            <p className="text-gray-400 tracking-[0.2em] text-xs md:text-sm uppercase italic mt-3">
+              M-1 Engagement CVR Diagnostics
             </p>
+            {/* ▲▲ タイトル変更 ここまで ▲▲ */}
             
             <div className="w-12 h-[1px] bg-gradient-to-r from-transparent via-[#d4af37]/50 to-transparent mx-auto mt-6 mb-4"></div>
 
@@ -167,7 +168,6 @@ export default function Diagnostic() {
           </div>
           {error && <p className="text-red-400 text-center font-bold text-sm">{error}</p>}
 
-          {/* ▼▼ 対象外コンテンツ時のエレガントな警告画面 ▼▼ */}
           {result && result.isExcluded && (
             <div className="animate-fade-in-up mt-12 mb-8">
               <div className="bg-[#141414] border border-[#d4af37]/40 p-10 md:p-14 rounded-2xl shadow-[0_0_30px_rgba(212,175,55,0.1)] text-center relative overflow-hidden group">
@@ -188,7 +188,6 @@ export default function Diagnostic() {
             </div>
           )}
 
-          {/* ▼▼ 通常の診断結果エリア ▼▼ */}
           {result && !result.isExcluded && (
             <div className="space-y-6 animate-fade-in-up">
               <div className="text-center">
