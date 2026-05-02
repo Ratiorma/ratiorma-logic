@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { extractVideoId, fetchVideoStats } from '../lib/youtubeApi';
 
-// Ratiorma独自の相対評価ロジック
+// Ratiorma独自の相対評価ロジック（ボーダーラインと称号固定）
 const getDiagnosticResult = (viewCount, cvrStr) => {
   const cvr = parseFloat(cvrStr);
   
@@ -83,179 +83,187 @@ export default function Diagnostic() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-gray-200 font-serif p-4 md:p-8">
-      <div className="max-w-4xl mx-auto space-y-12 mt-8">
-        
-        {/* ヘッダーエリア */}
-        <div className="text-center space-y-2">
+    <>
+      {/* 高級フォントの読み込みと適用スタイル */}
+      <style>
+        {`
+          @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;700;900&family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,900;1,400&display=swap');
           
-          {/* ▼▼ Ratiorma メインビジュアル（画像） ▼▼ */}
-          <div className="flex justify-center mb-8 animate-fade-in-up">
-            <div className="relative w-36 h-36 md:w-44 md:h-44 rounded-full border border-[#d4af37]/50 p-1 shadow-[0_0_30px_rgba(212,175,55,0.15)]">
-              <div className="w-full h-full rounded-full overflow-hidden border border-gray-800 bg-[#141414]">
-                {/* 
-                  ★ 画像を変更する方法 ★
-                  下の src="~~~" の中のURLを、お二人の写真やコンビロゴのURLに書き換えてください。
-                  X(Twitter)のアイコン画像のURLなどをそのまま貼ることも可能です。
-                */}
-                <img
-                  src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=500&auto=format&fit=crop"
-                  alt="Ratiorma"
-                  className="w-full h-full object-cover opacity-90 hover:opacity-100 transition-opacity"
-                />
-              </div>
-              {/* オフィシャルバッジ（装飾） */}
-              <div className="absolute -bottom-1 -right-1 bg-gradient-to-br from-[#d4af37] to-[#b8952d] text-black text-[10px] md:text-xs font-bold px-3 py-1.5 rounded-full border border-black shadow-lg tracking-widest font-sans">
-                OFFICIAL
+          .font-elegant {
+            font-family: 'Playfair Display', 'Noto Serif JP', serif;
+          }
+          .font-numbers {
+            font-family: 'Playfair Display', serif;
+            font-variant-numeric: lining-nums proportional-nums;
+          }
+        `}
+      </style>
+
+      <div className="min-h-screen bg-[#0a0a0a] text-gray-200 font-elegant p-4 md:p-8">
+        <div className="max-w-4xl mx-auto space-y-12 mt-8">
+          
+          {/* ヘッダーエリア */}
+          <div className="text-center space-y-2">
+            
+            {/* Ratiorma ミニマルロゴ */}
+            <div className="flex justify-center mb-6 animate-fade-in-up">
+              <div className="w-16 h-16 md:w-20 md:h-20 bg-gradient-to-br from-[#1a1a1a] to-[#0a0a0a] rounded-2xl border border-[#d4af37]/30 shadow-[0_0_20px_rgba(212,175,55,0.1)] flex items-center justify-center relative overflow-hidden group">
+                <div className="absolute inset-0 bg-gradient-to-tr from-[#d4af37]/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                <span className="text-[#d4af37] text-2xl md:text-3xl font-bold tracking-widest relative z-10 drop-shadow-md">
+                  R
+                </span>
               </div>
             </div>
+
+            <h1 className="text-4xl md:text-5xl font-bold text-[#d4af37] tracking-widest">
+              Ratiorma
+            </h1>
+            <p className="text-gray-400 tracking-[0.2em] text-xs md:text-sm uppercase italic mt-2">
+              Engagement CVR Diagnostics
+            </p>
+            
+            <div className="w-12 h-[1px] bg-gradient-to-r from-transparent via-[#d4af37]/50 to-transparent mx-auto mt-6 mb-4"></div>
+
+            <p className="text-gray-300 text-sm md:text-base leading-relaxed max-w-xl mx-auto">
+              YouTube動画のエンゲージメントCVRを独自のM-1相対評価アルゴリズムで診断し、戦略的分析レポートを生成します。
+            </p>
           </div>
-          {/* ▲▲ Ratiorma メインビジュアル ここまで ▲▲ */}
 
-          <h1 className="text-4xl md:text-5xl font-bold text-[#d4af37] tracking-widest font-sans">
-            Ratiorma
-          </h1>
-          <p className="text-gray-400 tracking-[0.2em] text-sm font-sans uppercase">
-            Engagement CVR Diagnostics
-          </p>
-          <p className="text-gray-300 text-sm md:text-base leading-relaxed mt-6 max-w-xl mx-auto font-sans">
-            YouTube動画のエンゲージメントCVRを独自のM-1相対評価アルゴリズムで診断し、戦略的分析レポートを生成します。
-          </p>
-        </div>
+          {/* 入力エリア（入力欄だけは視認性のためゴシックを残しつつスタイリッシュに） */}
+          <div className="bg-[#141414] p-3 rounded-xl border border-gray-800 shadow-lg flex flex-col md:flex-row gap-3">
+            <input
+              type="text"
+              placeholder="Youtube漫才動画のURLを入れて下さい。"
+              value={url}
+              onChange={(e) => setUrl(e.target.value)}
+              className="flex-1 bg-[#1f1f1f] border border-gray-700 rounded-lg px-4 py-3 text-white font-sans focus:outline-none focus:border-[#d4af37] transition-colors"
+            />
+            <button
+              onClick={handleAnalyze}
+              disabled={loading}
+              className="bg-[#d4af37] text-black px-8 py-3 rounded-lg font-bold hover:bg-[#ebd488] disabled:opacity-50 transition-colors whitespace-nowrap flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(212,175,55,0.2)]"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+              {loading ? '分析中...' : '診断開始'}
+            </button>
+          </div>
+          {error && <p className="text-red-400 text-center font-bold text-sm">{error}</p>}
 
-        {/* 入力エリア */}
-        <div className="bg-[#141414] p-3 rounded-xl border border-gray-800 shadow-lg flex flex-col md:flex-row gap-3">
-          <input
-            type="text"
-            placeholder="Youtube漫才動画のURLを入れて下さい。"
-            value={url}
-            onChange={(e) => setUrl(e.target.value)}
-            className="flex-1 bg-[#1f1f1f] border border-gray-700 rounded-lg px-4 py-3 text-white font-sans focus:outline-none focus:border-[#d4af37] transition-colors"
-          />
-          <button
-            onClick={handleAnalyze}
-            disabled={loading}
-            className="bg-[#d4af37] text-black px-8 py-3 rounded-lg font-bold hover:bg-[#ebd488] disabled:opacity-50 transition-colors whitespace-nowrap font-sans flex items-center justify-center gap-2"
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
-            {loading ? '分析中...' : '診断開始'}
-          </button>
-        </div>
-        {error && <p className="text-red-400 text-center font-bold text-sm">{error}</p>}
-
-        {/* 診断結果エリア */}
-        {result && (
-          <div className="space-y-6 animate-fade-in-up">
-            <div className="text-center">
-              <p className="text-[#d4af37] tracking-[0.3em] text-xs uppercase font-sans mb-6">Diagnostic Report</p>
-            </div>
-
-            {/* 動画情報 */}
-            <div className="flex flex-col md:flex-row gap-6 items-start mb-8">
-              <div className="w-full md:w-1/2 rounded-xl overflow-hidden shadow-2xl border border-gray-800">
-                <img src={result.thumbnail} alt={result.title} className="w-full h-auto object-cover" />
+          {/* 診断結果エリア */}
+          {result && (
+            <div className="space-y-6 animate-fade-in-up">
+              <div className="text-center">
+                <p className="text-[#d4af37] tracking-[0.3em] text-xs uppercase mb-6">Diagnostic Report</p>
               </div>
-              <div className="w-full md:w-1/2 space-y-3">
-                <h2 className="text-xl md:text-2xl font-bold text-white leading-snug">{result.title}</h2>
-                <div className="text-gray-400 text-sm space-y-1 font-sans">
-                  <p>Ratiorma Analysis Engine</p>
-                  <p>データ取得完了</p>
+
+              {/* 動画情報 */}
+              <div className="flex flex-col md:flex-row gap-6 items-start mb-8">
+                <div className="w-full md:w-1/2 rounded-xl overflow-hidden shadow-2xl border border-gray-800">
+                  <img src={result.thumbnail} alt={result.title} className="w-full h-auto object-cover" />
+                </div>
+                <div className="w-full md:w-1/2 space-y-3">
+                  <h2 className="text-xl md:text-2xl font-bold text-white leading-snug">{result.title}</h2>
+                  <div className="text-gray-400 text-sm space-y-1">
+                    <p>Ratiorma Analysis Engine</p>
+                    <p>データ取得完了</p>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            {/* ランクバッジ */}
-            <div className="flex justify-center mb-8 relative">
-              <div className="bg-[#121629] border border-[#2a3b75] px-16 py-8 rounded-2xl text-center shadow-[0_0_30px_rgba(42,59,117,0.3)] z-10">
-                <div className="text-4xl mb-2">{result.diagnosis.icon}</div>
-                <h3 className="text-3xl md:text-4xl font-bold text-blue-200 tracking-wider mb-2">
-                  【{result.diagnosis.rank}】
-                </h3>
-                <p className="text-gray-400 text-sm tracking-widest font-sans italic">
-                  {result.diagnosis.sub}
+              {/* ランクバッジ */}
+              <div className="flex justify-center mb-8 relative">
+                <div className="bg-[#121629] border border-[#2a3b75] px-16 py-8 rounded-2xl text-center shadow-[0_0_30px_rgba(42,59,117,0.3)] z-10">
+                  <div className="text-4xl mb-2">{result.diagnosis.icon}</div>
+                  <h3 className="text-3xl md:text-4xl font-bold text-blue-200 tracking-wider mb-2">
+                    【{result.diagnosis.rank}】
+                  </h3>
+                  <p className="text-gray-400 text-sm tracking-widest italic">
+                    {result.diagnosis.sub}
+                  </p>
+                </div>
+              </div>
+
+              <div className="text-center mb-6">
+                <span className="bg-[#1f1f1f] border border-[#d4af37]/30 text-[#d4af37] px-6 py-2 rounded-full text-xs tracking-widest">
+                  {result.diagnosis.label}
+                </span>
+              </div>
+
+              {/* 数値データ4連（圧倒的な美しさの数字フォント） */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="bg-[#141414] border border-gray-800 p-5 rounded-xl text-center hover:border-gray-600 transition-colors">
+                  <p className="text-gray-500 text-xs tracking-widest mb-3">👁 確定再生回数</p>
+                  <p className="text-2xl md:text-3xl font-bold text-white font-numbers">{result.viewCount.toLocaleString()}<span className="text-xs text-gray-500 ml-1">回</span></p>
+                </div>
+                <div className="bg-[#141414] border border-gray-800 p-5 rounded-xl text-center hover:border-gray-600 transition-colors">
+                  <p className="text-gray-500 text-xs tracking-widest mb-3">♡ いいね数</p>
+                  <p className="text-2xl md:text-3xl font-bold text-white font-numbers">{result.likeCount.toLocaleString()}<span className="text-xs text-gray-500 ml-1">件</span></p>
+                </div>
+                <div className="bg-[#141414] border border-gray-800 p-5 rounded-xl text-center shadow-[0_0_15px_rgba(212,175,55,0.1)] relative overflow-hidden group">
+                  <div className="absolute top-0 left-0 w-full h-1 bg-[#d4af37]"></div>
+                  <div className="absolute inset-0 bg-gradient-to-b from-[#d4af37]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                  <p className="text-[#d4af37] text-xs font-bold tracking-widest mb-3">↗ エンゲージメント CVR</p>
+                  <p className="text-3xl md:text-4xl font-bold text-white font-numbers">{result.cvr}<span className="text-sm text-gray-500 ml-1">%</span></p>
+                </div>
+                <div className="bg-[#141414] border border-gray-800 p-5 rounded-xl text-center hover:border-gray-600 transition-colors">
+                  <p className="text-gray-500 text-xs tracking-widest mb-3">💬 コメント数</p>
+                  <p className="text-2xl md:text-3xl font-bold text-white font-numbers">{result.commentCount.toLocaleString()}<span className="text-xs text-gray-500 ml-1">件</span></p>
+                </div>
+              </div>
+
+              {/* 戦略分析レポート */}
+              <div className="bg-[#141414] border border-[#d4af37]/30 p-8 rounded-xl mt-8 shadow-lg">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="bg-[#d4af37]/10 p-2 rounded-lg border border-[#d4af37]/20">
+                    <svg className="w-5 h-5 text-[#d4af37]" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+                  </div>
+                  <div>
+                    <h4 className="text-lg font-bold text-white tracking-widest">ラティオルマ・戦略分析</h4>
+                    <p className="text-gray-500 text-xs italic">Ratiorma Strategic Analysis</p>
+                  </div>
+                </div>
+                <p className="text-gray-300 leading-loose text-sm md:text-base tracking-wide whitespace-pre-wrap">
+                  {result.diagnosis.text}
                 </p>
               </div>
-            </div>
 
-            <div className="text-center mb-6">
-              <span className="bg-[#1f1f1f] border border-[#d4af37]/30 text-[#d4af37] px-6 py-2 rounded-full text-xs tracking-widest">
-                {result.diagnosis.label}
-              </span>
-            </div>
+              {/* シェアアクション群（X, LINE, コピー） */}
+              <div className="flex flex-wrap justify-center gap-4 pt-6 pb-4">
+                
+                <button
+                  onClick={shareToX}
+                  className="flex items-center gap-2 bg-[#141414] border border-gray-700 px-6 py-3 rounded-full hover:border-[#d4af37] hover:text-[#d4af37] transition-all text-gray-300 text-sm tracking-wider"
+                >
+                  <svg className="w-4 h-4 fill-currentColor" viewBox="0 0 24 24">
+                    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+                  </svg>
+                  ポスト
+                </button>
 
-            {/* 数値データ4連 */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="bg-[#141414] border border-gray-800 p-5 rounded-xl text-center">
-                <p className="text-gray-500 text-xs tracking-widest mb-3 font-sans">👁 確定再生回数</p>
-                <p className="text-2xl font-bold text-white font-sans">{result.viewCount.toLocaleString()}<span className="text-xs text-gray-500 ml-1 font-serif">回</span></p>
+                <button
+                  onClick={shareToLine}
+                  className="flex items-center gap-2 bg-[#141414] border border-[#06C755]/40 px-6 py-3 rounded-full hover:border-[#06C755] hover:bg-[#06C755]/5 transition-all text-[#06C755] text-sm tracking-wider"
+                >
+                  <svg className="w-4 h-4 fill-currentColor" viewBox="0 0 24 24">
+                     <path d="M24 10.304c0-5.369-5.383-9.738-12-9.738-6.616 0-12 4.369-12 9.738 0 4.814 3.96 8.904 9.404 9.608.371.077.868.238 1.002.544.122.28-.04.856-.123 1.205-.098.411-.476 1.884-.578 2.296-.134.542.612.87 1.05.589.626-.4 3.393-2.128 4.654-3.14 3.256-2.618 5.591-5.698 5.591-8.798" />
+                  </svg>
+                  LINEで送る
+                </button>
+
+                <button
+                  onClick={copyToClipboard}
+                  className={`flex items-center gap-2 bg-[#141414] border px-6 py-3 rounded-full transition-all text-sm tracking-wider ${copied ? 'border-[#d4af37] text-[#d4af37] bg-[#d4af37]/10' : 'border-gray-700 text-gray-300 hover:border-gray-400'}`}
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
+                  {copied ? 'コピーしました！' : 'テキストをコピー'}
+                </button>
+
               </div>
-              <div className="bg-[#141414] border border-gray-800 p-5 rounded-xl text-center">
-                <p className="text-gray-500 text-xs tracking-widest mb-3 font-sans">♡ いいね数</p>
-                <p className="text-2xl font-bold text-white font-sans">{result.likeCount.toLocaleString()}<span className="text-xs text-gray-500 ml-1 font-serif">件</span></p>
-              </div>
-              <div className="bg-[#141414] border border-gray-800 p-5 rounded-xl text-center shadow-[0_0_15px_rgba(212,175,55,0.1)] relative overflow-hidden">
-                <div className="absolute top-0 left-0 w-full h-1 bg-[#d4af37]"></div>
-                <p className="text-gray-300 text-xs tracking-widest mb-3 font-sans">↗ エンゲージメント CVR</p>
-                <p className="text-3xl font-bold text-white font-sans">{result.cvr}<span className="text-sm text-gray-500 ml-1 font-serif">%</span></p>
-              </div>
-              <div className="bg-[#141414] border border-gray-800 p-5 rounded-xl text-center">
-                <p className="text-gray-500 text-xs tracking-widest mb-3 font-sans">💬 コメント数</p>
-                <p className="text-2xl font-bold text-white font-sans">{result.commentCount.toLocaleString()}<span className="text-xs text-gray-500 ml-1 font-serif">件</span></p>
-              </div>
-            </div>
-
-            {/* 戦略分析レポート */}
-            <div className="bg-[#141414] border border-[#d4af37]/30 p-8 rounded-xl mt-8">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="bg-[#d4af37]/20 p-2 rounded-lg">
-                  <svg className="w-5 h-5 text-[#d4af37]" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
-                </div>
-                <div>
-                  <h4 className="text-lg font-bold text-white tracking-widest">ラティオルマ・戦略分析</h4>
-                  <p className="text-gray-500 text-xs font-sans italic">Ratiorma Strategic Analysis</p>
-                </div>
-              </div>
-              <p className="text-gray-300 leading-loose text-sm md:text-base tracking-wide whitespace-pre-wrap">
-                {result.diagnosis.text}
-              </p>
-            </div>
-
-            {/* シェアアクション群（X, LINE, コピー） */}
-            <div className="flex flex-wrap justify-center gap-4 pt-6 pb-4 font-sans">
-              
-              <button
-                onClick={shareToX}
-                className="flex items-center gap-2 bg-[#141414] border border-gray-700 px-6 py-3 rounded-full hover:border-gray-400 transition-all text-gray-300 hover:text-white text-sm tracking-wider"
-              >
-                <svg className="w-4 h-4 fill-currentColor" viewBox="0 0 24 24">
-                  <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
-                </svg>
-                ポスト
-              </button>
-
-              <button
-                onClick={shareToLine}
-                className="flex items-center gap-2 bg-[#141414] border border-[#06C755]/40 px-6 py-3 rounded-full hover:border-[#06C755] transition-all text-[#06C755] text-sm tracking-wider"
-              >
-                <svg className="w-4 h-4 fill-currentColor" viewBox="0 0 24 24">
-                   <path d="M24 10.304c0-5.369-5.383-9.738-12-9.738-6.616 0-12 4.369-12 9.738 0 4.814 3.96 8.904 9.404 9.608.371.077.868.238 1.002.544.122.28-.04.856-.123 1.205-.098.411-.476 1.884-.578 2.296-.134.542.612.87 1.05.589.626-.4 3.393-2.128 4.654-3.14 3.256-2.618 5.591-5.698 5.591-8.798" />
-                </svg>
-                LINEで送る
-              </button>
-
-              <button
-                onClick={copyToClipboard}
-                className={`flex items-center gap-2 bg-[#141414] border px-6 py-3 rounded-full transition-all text-sm tracking-wider ${copied ? 'border-[#d4af37] text-[#d4af37]' : 'border-gray-700 text-gray-300 hover:border-gray-400'}`}
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
-                {copied ? 'コピーしました！' : 'テキストをコピー'}
-              </button>
 
             </div>
-
-          </div>
-        )}
+          )}
+        </div>
       </div>
-    </div>
+    </>
   );
 }
