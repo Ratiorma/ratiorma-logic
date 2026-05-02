@@ -57,6 +57,16 @@ export default function Diagnostic() {
     }
   };
 
+  // X（旧Twitter）へのシェア用URL生成
+  const shareToX = () => {
+    if (!result) return;
+    const text = encodeURIComponent(
+      `あなたの漫才のエンゲージメントCVRは ${result.cvr}%（${result.diagnosis.rank}）でした。\n\n【Ratiorma 戦略分析】\n${result.diagnosis.sub}\n\n#Ratiorma漫才解析`
+    );
+    const shareUrl = `https://twitter.com/intent/tweet?text=${text}`;
+    window.open(shareUrl, '_blank');
+  };
+
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-gray-200 font-serif p-4 md:p-8">
       <div className="max-w-4xl mx-auto space-y-12 mt-8">
@@ -169,6 +179,21 @@ export default function Diagnostic() {
               <p className="text-gray-300 leading-loose text-sm md:text-base tracking-wide">
                 {result.diagnosis.text}
               </p>
+            </div>
+
+            {/* X（旧Twitter）シェアボタン */}
+            <div className="flex justify-center pt-6 pb-4">
+              <button
+                onClick={shareToX}
+                className="group relative flex items-center gap-3 bg-[#141414] border border-[#d4af37]/40 px-8 py-4 rounded-full overflow-hidden hover:border-[#d4af37] transition-all shadow-lg hover:shadow-[0_0_20px_rgba(212,175,55,0.2)]"
+              >
+                <svg className="w-5 h-5 fill-white relative z-10" viewBox="0 0 24 24">
+                  <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+                </svg>
+                <span className="text-[#d4af37] font-bold tracking-wider relative z-10 text-sm font-sans">
+                  診断結果をポストする
+                </span>
+              </button>
             </div>
 
           </div>
