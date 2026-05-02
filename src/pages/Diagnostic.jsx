@@ -16,7 +16,7 @@ const getDiagnosticResult = (viewCount, cvrStr) => {
     if (cvr >= 1.0) return { icon: '👑', rank: 'ユニコーン企業', sub: 'Unicorn / M-1決勝レベル', label: 'ミドルヒット領域（10万再生超）', text: `数十万規模のリーチを持ちながら、CVR ${cvr}%という圧倒的なアウトライアー（異常値）を叩き出している。これはマスに届きつつも、特定のお笑いコア層に「深く、そして鋭く」突き刺さっている確たる証拠である。この異常な熱量を保ったまま賞レースを駆け上がれば、一気に業界の勢力図を塗り替える「ユニコーン（大化け銘柄）」となる完全無欠のポテンシャルを秘めている。` };
     if (cvr >= 0.5) return { icon: '💎', rank: '優良事業', sub: 'Cash Cow / M-1・準々決勝～準決勝レベル', label: 'ミドルヒット領域（10万再生超）', text: `再生数とエンゲージメントのバランスが美しく最適化された、極めて健全な優良事業モデルである。視聴者の信頼が継続的に蓄積されており、M-1においても準々決勝・準決勝と堅実に駒を進める「負けない戦い」ができる実力を持つ。さらなる飛躍、すなわち決勝の舞台を掴み取るためには、既存の枠組みをあえて破壊するような「予測不能な裏切り」のスパイスが必要となる。` };
     if (cvr >= 0.2) return { icon: '🌱', rank: '損益分岐点', sub: 'Break-Even Point / M-1・2回戦・3回戦レベル', label: 'ミドルヒット領域（10万再生超）', text: `標準的なエンゲージメント水準を確保しており、基礎的な技術力と構成力は市場に証明されている。しかし、数多いる実力派漫才師の中で「なぜ彼らでなければならないのか」という絶対的な理由付けに欠けている。現状の損益分岐点から抜け出すためには、キャラクターの深掘りや、他組には真似できない唯一無二のストロングポイントの確立にリソースを集中投下すべきである。` };
-    return { icon: '📉', rank: '不良債権', sub: 'Non-Performing Loan / M-1・1回戦敗退レベル', label: 'ミドルヒット領域（10万再生超）', text: `一定の認知は得られているものの、視聴者の心を揺さぶる決定打が不足している。「とりあえず見られる」という状態から、「思わず評価ボタンを押したくなる」という能動的なフェーズへの移行デザインが欠落している。ターゲットが誰なのかが曖昧になっている可能性が高く、ペルソナの再設定と、ネタの冒頭15秒における強烈なフックの再開発が必須である。` };
+    return { icon: '📉', rank: '不良債権', sub: 'Non-Performing Loan / M-1・1回戦敗退レベル', label: 'ミドルヒット領域（10万再生超）', text: `一定の認知は得られているものの、視聴者の心を揺さぶる決定打が不足している。「とりあえず見られる」という状態から、「思わず評価ボタンを押したくなる」という能動的なフェーズへの移行デザインが欠落している。ターゲットが誰なのかが曖昧になっている可能性が高く、ペルソナের再設定と、ネタの冒頭15秒における強烈なフックの再開発が必須である。` };
   }
 
   if (cvr >= 3.0) return { icon: '👑', rank: 'ユニコーン企業', sub: 'Unicorn / M-1決勝レベル', label: 'アーリーステージ（10万再生未満）', text: `分母となる再生数こそ発展途上（アーリーステージ）であるが、一度触れた視聴者を確実に虜にするCVR ${cvr}%という数字は、もはや「暴力的なまでの引力」である。マス向けの最適化を一切無視した、純度の高いお笑いのコアがそこに存在する。この熱狂の種火を消すことなく、戦略的なSNS露出やライブでの実績構築を掛け合わせることで、瞬く間にスターダムへと駆け上がるSSR級の原石である。` };
@@ -47,12 +47,12 @@ export default function Diagnostic() {
   const [error, setError] = useState('');
   const [copied, setCopied] = useState(false);
 
-  // ▼ 高さを正確に親（HTML）に伝えるロジックを修正 ▼
+  // ▼ 自動リサイズ通信ロジック：余白地獄を解消するために高さを正しく計測 ▼
   useEffect(() => {
     const sendHeight = () => {
       const root = document.getElementById('ratiorma-root');
       if (root) {
-        // min-h-screenを外したことで、中身の正確な高さだけを取得可能に
+        // 余計な下部マージンを排除した実寸の高さを送信
         const height = root.offsetHeight;
         window.parent.postMessage({ type: 'resize', height: height }, '*');
       }
@@ -106,9 +106,16 @@ export default function Diagnostic() {
     }
   };
 
+  // ▼ SEO推奨テキスト案を反映 ▼
   const getShareText = () => {
     if (!result || result.isExcluded) return '';
-    return `漫才のエンゲージメントCVRは ${result.cvr}%（${result.diagnosis.rank}）でした。\n\n【Ratiorma 戦略分析】\n${result.diagnosis.sub}\n\nURL: ${result.videoUrl}\n#Ratiorma漫才解析`;
+    return `漫才のエンゲージメントCVRは ${result.cvr}%（${result.diagnosis.rank}）でした。
+
+【Ratiorma(ラティオルマ) 漫才戦略診断】
+${result.diagnosis.sub}
+
+URL: ${result.videoUrl}
+ #Ratiorma #M1 #漫才解析`;
   };
 
   const shareToX = () => {
@@ -144,8 +151,8 @@ export default function Diagnostic() {
         `}
       </style>
 
-      {/* ▼ min-h-screenを削除し、中身にジャストフィットさせるIDを追加 ▼ */}
-      <div id="ratiorma-root" className="bg-[#0a0a0a] text-gray-200 font-elegant p-4 md:p-8 overflow-hidden pb-12">
+      {/* min-h-screenを削除し、IDを付与してジャストサイズで計測されるように修正 */}
+      <div id="ratiorma-root" className="bg-[#0a0a0a] text-gray-200 font-elegant p-4 md:p-8 overflow-hidden pb-4">
         <div className="max-w-4xl mx-auto space-y-12 mt-4 md:mt-8">
           
           <div className="text-center space-y-2">
@@ -286,7 +293,7 @@ export default function Diagnostic() {
               </div>
 
               <div className="flex flex-wrap justify-center gap-3 md:gap-4 pt-6 pb-2">
-                {/* ▼▼ 修正：Xロゴのテキスト色・アイコン色をピュアホワイトに！ ▼▼ */}
+                {/* 修正：Xロゴとテキストを白く、余白を調整 */}
                 <button
                   onClick={shareToX}
                   className="flex items-center gap-2 bg-[#141414] border border-gray-700 px-5 md:px-6 py-3 rounded-full hover:border-white transition-all text-white text-xs md:text-sm tracking-wider font-sans"
