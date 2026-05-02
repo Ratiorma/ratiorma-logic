@@ -1,13 +1,11 @@
 import React, { useState } from 'react';
 import { extractVideoId, fetchVideoStats } from '../lib/youtubeApi';
 
-// Ratiorma独自の相対評価ロジック（実際のM-1決勝データを反映した極限チューニング）
+// Ratiorma独自の相対評価ロジック
 const getDiagnosticResult = (viewCount, cvrStr) => {
   const cvr = parseFloat(cvrStr);
   
   if (viewCount >= 1000000) {
-    // メガヒット領域（100万再生超）
-    // 100万回を超えて0.8%以上なら文句なしのトップオブトップ（決勝）
     if (cvr >= 0.8) return { icon: '👑', rank: 'ユニコーン企業', sub: 'Unicorn / M-1決勝レベル', label: 'メガヒット領域（100万再生超）', text: `圧倒的なマスへの到達（${(viewCount/10000).toFixed(0)}万再生）を達成しながら、CVR ${cvr}%という驚異的なエンゲージメントを維持している稀有な事例である。一般層への「ウケ」と、お笑いフリークを唸らせる「ネタの強度」が完全に同居しており、M-1決勝の舞台において審査員と観客の双方を掌握できる完全無欠のポテンシャルを誇る。もはや単なるネタ動画の枠を超え、強固なブランドとして市場に君臨するメガ・ユニコーン銘柄である。` };
     if (cvr >= 0.4) return { icon: '💎', rank: '優良事業', sub: 'Cash Cow / M-1・準々決勝～準決勝レベル', label: 'メガヒット領域（100万再生超）', text: `${(viewCount/10000).toFixed(0)}万再生という巨大な分母に対し、CVR ${cvr}%は非常に安定的かつ優秀なスコアである。一過性のバズ消費に終わらず、視聴者が確実にネタの本質的価値を評価し、強固な支持基盤（キャッシュカウ）を形成している。賞レースの過酷な予選を突破する地力はすでに証明済みであり、決勝進出に向けては「この組ならではの爆発的フック」を一点突破で研ぎ澄ますフェーズに入っている。` };
     if (cvr >= 0.15) return { icon: '🌱', rank: '損益分岐点', sub: 'Break-Even Point / M-1・2回戦・3回戦レベル', label: 'メガヒット領域（100万再生超）', text: `メガヒット領域に到達し、マジョリティ層への認知拡大には成功しているものの、能動的な評価（高評価率）は市場の平均値に収束している。YouTubeのアルゴリズムによる露出恩恵を多分に受けている可能性が高く、視聴者が「コアなファン」へ転換する手前の段階（損益分岐点）に留まっている。今後は、広く見られることよりも「深く刺さる」ための、ネタの根幹となるUSP（独自の強み）の再定義が求められる。` };
@@ -15,19 +13,27 @@ const getDiagnosticResult = (viewCount, cvrStr) => {
   } 
   
   if (viewCount >= 100000) {
-    // ミドルヒット領域（10万再生超〜99万再生）
-    // ★ 1.0% を超えれば決勝レベル（ユニコーン）として正しく評価
     if (cvr >= 1.0) return { icon: '👑', rank: 'ユニコーン企業', sub: 'Unicorn / M-1決勝レベル', label: 'ミドルヒット領域（10万再生超）', text: `数十万規模のリーチを持ちながら、CVR ${cvr}%という圧倒的なアウトライアー（異常値）を叩き出している。これはマスに届きつつも、特定のお笑いコア層に「深く、そして鋭く」突き刺さっている確たる証拠である。この異常な熱量を保ったまま賞レースを駆け上がれば、一気に業界の勢力図を塗り替える「ユニコーン（大化け銘柄）」となる完全無欠のポテンシャルを秘めている。` };
     if (cvr >= 0.5) return { icon: '💎', rank: '優良事業', sub: 'Cash Cow / M-1・準々決勝～準決勝レベル', label: 'ミドルヒット領域（10万再生超）', text: `再生数とエンゲージメントのバランスが美しく最適化された、極めて健全な優良事業モデルである。視聴者の信頼が継続的に蓄積されており、M-1においても準々決勝・準決勝と堅実に駒を進める「負けない戦い」ができる実力を持つ。さらなる飛躍、すなわち決勝の舞台を掴み取るためには、既存の枠組みをあえて破壊するような「予測不能な裏切り」のスパイスが必要となる。` };
     if (cvr >= 0.2) return { icon: '🌱', rank: '損益分岐点', sub: 'Break-Even Point / M-1・2回戦・3回戦レベル', label: 'ミドルヒット領域（10万再生超）', text: `標準的なエンゲージメント水準を確保しており、基礎的な技術力と構成力は市場に証明されている。しかし、数多いる実力派漫才師の中で「なぜ彼らでなければならないのか」という絶対的な理由付けに欠けている。現状の損益分岐点から抜け出すためには、キャラクターの深掘りや、他組には真似できない唯一無二のストロングポイントの確立にリソースを集中投下すべきである。` };
     return { icon: '📉', rank: '不良債権', sub: 'Non-Performing Loan / M-1・1回戦敗退レベル', label: 'ミドルヒット領域（10万再生超）', text: `一定の認知は得られているものの、視聴者の心を揺さぶる決定打が不足している。「とりあえず見られる」という状態から、「思わず評価ボタンを押したくなる」という能動的なフェーズへの移行デザインが欠落している。ターゲットが誰なのかが曖昧になっている可能性が高く、ペルソナの再設定と、ネタの冒頭15秒における強烈なフックの再開発が必須である。` };
   }
 
-  // アーリーステージ（10万再生未満）
   if (cvr >= 3.0) return { icon: '👑', rank: 'ユニコーン企業', sub: 'Unicorn / M-1決勝レベル', label: 'アーリーステージ（10万再生未満）', text: `分母となる再生数こそ発展途上（アーリーステージ）であるが、一度触れた視聴者を確実に虜にするCVR ${cvr}%という数字は、もはや「暴力的なまでの引力」である。マス向けの最適化を一切無視した、純度の高いお笑いのコアがそこに存在する。この熱狂の種火を消すことなく、戦略的なSNS露出やライブでの実績構築を掛け合わせることで、瞬く間にスターダムへと駆け上がるSSR級の原石である。` };
   if (cvr >= 1.2) return { icon: '💎', rank: '優良事業', sub: 'Cash Cow / M-1・準々決勝～準決勝レベル', label: 'アーリーステージ（10万再生未満）', text: `初期段階のプロジェクトとしては、申し分のないエンゲージメント率を記録している。ニッチな層に深く突き刺さる「独自の世界観（コンセプチュアルな強み）」が正しく市場に評価され始めている段階だ。この確固たる支持基盤をキャッシュカウ（資金源）として足場を固めつつ、少しずつ一般層にも伝わる翻訳（チューニング）を施していくことが、次なる成長への最短ルートとなる。` };
   if (cvr >= 0.5) return { icon: '🌱', rank: '損益分岐点', sub: 'Break-Even Point / M-1・2回戦・3回戦レベル', label: 'アーリーステージ（10万再生未満）', text: `初期段階において標準以上のCVRを獲得しており、最低限の品質保証（クオリティ・アシュアランス）はクリアしている。しかし、爆発的なバズを生み出すための「起爆剤」がまだ投下されていない。漫才の後半に向けてのボルテージの上げ方や、記憶にこびりつく強烈なパンチラインの欠如が課題であり、構成のクライマックスにおけるカタルシスの最大化を図るべきである。` };
   return { icon: '📉', rank: '不良債権', sub: 'Non-Performing Loan / M-1・1回戦敗退レベル', label: 'アーリーステージ（10万再生未満）', text: `残念ながら、現時点では市場からの能動的な評価を全く得られておらず、コンセプトレベルでの深刻なエラーが起きている。現状のまま回数を重ねてもサンクコスト（埋没費用）が膨らむばかりである。客観的なフィードバックを徹底的に収集し、「自分たちがやりたいお笑い」と「市場が求めているお笑い」の乖離を冷静に分析・すり合わせるという、痛みを伴う改革が必要不可欠だ。` };
+};
+
+// お笑い・漫才フィルター判定
+const isComedyVideo = (stats) => {
+  const keywords = ['漫才', 'M-1', 'お笑い', 'コント', 'お笑い芸人', 'グランプリ'];
+  const searchTarget = `${stats.title} ${stats.description} ${(stats.tags || []).join(' ')}`;
+  
+  const hasKeyword = keywords.some(kw => searchTarget.includes(kw));
+  const validCategory = stats.categoryId === '23' || stats.categoryId === '24';
+  
+  return hasKeyword || validCategory;
 };
 
 export default function Diagnostic() {
@@ -55,6 +61,13 @@ export default function Diagnostic() {
     setLoading(true);
     try {
       const stats = await fetchVideoStats(videoId);
+      
+      // フィルターチェック
+      if (!isComedyVideo(stats)) {
+        setResult({ isExcluded: true });
+        return;
+      }
+
       const cvr = stats.viewCount > 0 ? ((stats.likeCount / stats.viewCount) * 100).toFixed(3) : 0;
       const diagnosis = getDiagnosticResult(stats.viewCount, cvr);
       setResult({ ...stats, cvr, diagnosis, videoUrl: url });
@@ -66,7 +79,7 @@ export default function Diagnostic() {
   };
 
   const getShareText = () => {
-    if (!result) return '';
+    if (!result || result.isExcluded) return '';
     return `漫才のエンゲージメントCVRは ${result.cvr}%（${result.diagnosis.rank}）でした。\n\n【Ratiorma 戦略分析】\n${result.diagnosis.sub}\n\nURL: ${result.videoUrl}\n#Ratiorma漫才解析`;
   };
 
@@ -149,7 +162,30 @@ export default function Diagnostic() {
           </div>
           {error && <p className="text-red-400 text-center font-bold text-sm">{error}</p>}
 
-          {result && (
+          {/* ▼▼ 対象外コンテンツ時のエレガントな警告画面 ▼▼ */}
+          {result && result.isExcluded && (
+            <div className="animate-fade-in-up mt-12 mb-8">
+              <div className="bg-[#141414] border border-[#d4af37]/40 p-10 md:p-14 rounded-2xl shadow-[0_0_30px_rgba(212,175,55,0.1)] text-center relative overflow-hidden group">
+                <div className="absolute inset-0 bg-gradient-to-b from-[#d4af37]/5 to-transparent opacity-50"></div>
+                
+                {/* 警告アイコン（上品なデザイン） */}
+                <svg className="w-12 h-12 text-[#d4af37] mx-auto mb-6 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+
+                <h3 className="text-xl md:text-2xl font-bold text-[#d4af37] tracking-widest mb-4 font-serif">
+                  対象外のコンテンツです
+                </h3>
+                <p className="text-[#d4af37]/80 text-sm md:text-base leading-loose max-w-2xl mx-auto font-sans tracking-wide">
+                  こちらの動画は漫才・お笑い関連動画として認識できませんでした。<br />
+                  解析ロジック保護のため、M-1等の漫才動画のURLを入力してください。
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* ▼▼ 通常の診断結果エリア ▼▼ */}
+          {result && !result.isExcluded && (
             <div className="space-y-6 animate-fade-in-up">
               <div className="text-center">
                 <p className="text-[#d4af37] tracking-[0.3em] text-xs uppercase mb-6">Diagnostic Report</p>
