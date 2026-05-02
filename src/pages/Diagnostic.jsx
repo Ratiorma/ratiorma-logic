@@ -1,6 +1,15 @@
 import React, { useState } from 'react';
 import { extractVideoId, fetchVideoStats } from '../lib/youtubeApi';
 
+// CVRに応じた診断メッセージを生成する関数
+const getDiagnosticMessage = (cvr) => {
+  const numCvr = parseFloat(cvr);
+  if (numCvr >= 3.0) return { rank: 'S', text: '驚異的な熱狂度です！視聴者の心を完全に掴んでおり、M-1の舞台でも爆発を起こせる圧倒的なポテンシャルがあります。森井さんとの今の方向性は完璧です。このまま突き進みましょう！', color: 'text-yellow-400' };
+  if (numCvr >= 1.5) return { rank: 'A', text: '非常に優秀な数値です。ファンがしっかりとネタに反応し、熱量を持っています。この画面越しの熱狂を、劇場や予選会場の「初見の観客」にいかに伝播させるかが次のブレイクスルーの鍵になります。', color: 'text-blue-400' };
+  if (numCvr >= 0.8) return { rank: 'B', text: '標準的なエンゲージメントです。動画は最後まで見られていますが「思わずコメントしたくなる」「高評価を押したくなる」ほどの強烈なインパクトがもう一歩必要です。ネタの冒頭の「掴み（フック）」をさらに強化してみましょう。', color: 'text-green-400' };
+  return { rank: 'C', text: '再生数に対して視聴者の反応が薄い状態です。アルゴリズムで偶然見られている層が多く、ターゲットに深く刺さっていない可能性があります。誰に向けてのネタなのか、軸となるコンセプトの再定義が必要です。', color: 'text-red-400' };
+};
+
 export default function Diagnostic() {
   const [url, setUrl] = useState('');
   const [loading, setLoading] = useState(false);
@@ -63,26 +72,41 @@ export default function Diagnostic() {
         </div>
 
         {result && (
-          <div className="bg-[#1a1a1a] rounded-xl border border-[#d4af37]/30 overflow-hidden mt-8">
-            <div className="p-6">
-              <h2 className="text-xl font-bold mb-6 text-white border-b border-gray-800 pb-4">{result.title}</h2>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className="bg-[#2a2a2a] p-4 rounded-lg text-center">
-                  <p className="text-gray-400 text-sm mb-1">再生回数</p>
-                  <p className="text-2xl font-bold text-white">{result.viewCount.toLocaleString()}</p>
+          <div className="space-y-6 mt-8">
+            <div className="bg-[#1a1a1a] rounded-xl border border-[#d4af37]/30 overflow-hidden">
+              <div className="p-6">
+                <h2 className="text-xl font-bold mb-6 text-white border-b border-gray-800 pb-4">{result.title}</h2>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div className="bg-[#2a2a2a] p-4 rounded-lg text-center">
+                    <p className="text-gray-400 text-sm mb-1">再生回数</p>
+                    <p className="text-2xl font-bold text-white">{result.viewCount.toLocaleString()}</p>
+                  </div>
+                  <div className="bg-[#2a2a2a] p-4 rounded-lg text-center">
+                    <p className="text-gray-400 text-sm mb-1">高評価</p>
+                    <p className="text-2xl font-bold text-white">{result.likeCount.toLocaleString()}</p>
+                  </div>
+                  <div className="bg-[#2a2a2a] p-4 rounded-lg text-center">
+                    <p className="text-gray-400 text-sm mb-1">コメント</p>
+                    <p className="text-2xl font-bold text-white">{result.commentCount.toLocaleString()}</p>
+                  </div>
+                  <div className="bg-gradient-to-br from-[#d4af37] to-[#b8952d] p-4 rounded-lg text-center shadow-lg transform hover:scale-105 transition-transform">
+                    <p className="text-black/80 text-sm mb-1 font-bold">エンゲージメントCVR</p>
+                    <p className="text-3xl font-black text-black">{result.cvr}%</p>
+                  </div>
                 </div>
-                <div className="bg-[#2a2a2a] p-4 rounded-lg text-center">
-                  <p className="text-gray-400 text-sm mb-1">高評価</p>
-                  <p className="text-2xl font-bold text-white">{result.likeCount.toLocaleString()}</p>
+              </div>
+            </div>
+
+            {/* 診断コメントエリア */}
+            <div className="bg-[#1a1a1a] p-6 rounded-xl border border-[#d4af37]/30 shadow-lg">
+              <h3 className="text-lg font-bold text-[#d4af37] mb-4 border-b border-gray-800 pb-2">Ratiorma 戦略分析レポート</h3>
+              <div className="flex items-start gap-5">
+                <div className={`text-6xl font-black mt-1 ${getDiagnosticMessage(result.cvr).color}`}>
+                  {getDiagnosticMessage(result.cvr).rank}
                 </div>
-                <div className="bg-[#2a2a2a] p-4 rounded-lg text-center">
-                  <p className="text-gray-400 text-sm mb-1">コメント</p>
-                  <p className="text-2xl font-bold text-white">{result.commentCount.toLocaleString()}</p>
-                </div>
-                <div className="bg-gradient-to-br from-[#d4af37] to-[#b8952d] p-4 rounded-lg text-center shadow-lg transform hover:scale-105 transition-transform">
-                  <p className="text-black/80 text-sm mb-1 font-bold">エンゲージメントCVR</p>
-                  <p className="text-3xl font-black text-black">{result.cvr}%</p>
-                </div>
+                <p className="text-gray-300 leading-relaxed text-base pt-2">
+                  {getDiagnosticMessage(result.cvr).text}
+                </p>
               </div>
             </div>
           </div>
