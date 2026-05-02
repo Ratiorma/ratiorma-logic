@@ -28,10 +28,12 @@ export default function Diagnostic() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
   const [error, setError] = useState('');
+  const [copied, setCopied] = useState(false);
 
   const handleAnalyze = async () => {
     setError('');
     setResult(null);
+    setCopied(false);
     if (!url) {
       setError('YouTubeのURLを入力してください。');
       return;
@@ -46,10 +48,9 @@ export default function Diagnostic() {
     setLoading(true);
     try {
       const stats = await fetchVideoStats(videoId);
-      // Base44の正確なロジック：高評価のみをエンゲージメントとする
       const cvr = stats.viewCount > 0 ? ((stats.likeCount / stats.viewCount) * 100).toFixed(3) : 0;
       const diagnosis = getDiagnosticResult(stats.viewCount, cvr);
-      setResult({ ...stats, cvr, diagnosis });
+      setResult({ ...stats, cvr, diagnosis, videoUrl: url });
     } catch (err) {
       setError(err.message);
     } finally {
@@ -57,14 +58,27 @@ export default function Diagnostic() {
     }
   };
 
-  // X（旧Twitter）へのシェア用URL生成
+  // 拡散用テキストの生成
+  const getShareText = () => {
+    if (!result) return '';
+    return `漫才のエンゲージメントCVRは ${result.cvr}%（${result.diagnosis.rank}）でした。\n\n【Ratiorma 戦略分析】\n${result.diagnosis.sub}\n\nURL: ${result.videoUrl}\n#Ratiorma漫才解析`;
+  };
+
   const shareToX = () => {
-    if (!result) return;
-    const text = encodeURIComponent(
-      `あなたの漫才のエンゲージメントCVRは ${result.cvr}%（${result.diagnosis.rank}）でした。\n\n【Ratiorma 戦略分析】\n${result.diagnosis.sub}\n\n#Ratiorma漫才解析`
-    );
-    const shareUrl = `https://twitter.com/intent/tweet?text=${text}`;
+    const shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(getShareText())}`;
     window.open(shareUrl, '_blank');
+  };
+
+  const shareToLine = () => {
+    const shareUrl = `https://line.me/R/msg/text/?${encodeURIComponent(getShareText())}`;
+    window.open(shareUrl, '_blank');
+  };
+
+  const copyToClipboard = () => {
+    navigator.clipboard.writeText(getShareText()).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
   };
 
   return (
@@ -104,14 +118,14 @@ export default function Diagnostic() {
         </div>
         {error && <p className="text-red-400 text-center font-bold text-sm">{error}</p>}
 
-        {/* 診断結果エリア（Base44デザイン完全踏襲） */}
+        {/* 診断結果エリア */}
         {result && (
           <div className="space-y-6 animate-fade-in-up">
             <div className="text-center">
               <p className="text-[#d4af37] tracking-[0.3em] text-xs uppercase font-sans mb-6">Diagnostic Report</p>
             </div>
 
-            {/* 動画情報（サムネイル追加） */}
+            {/* 動画情報 */}
             <div className="flex flex-col md:flex-row gap-6 items-start mb-8">
               <div className="w-full md:w-1/2 rounded-xl overflow-hidden shadow-2xl border border-gray-800">
                 <img src={result.thumbnail} alt={result.title} className="w-full h-auto object-cover" />
@@ -181,19 +195,40 @@ export default function Diagnostic() {
               </p>
             </div>
 
-            {/* X（旧Twitter）シェアボタン */}
-            <div className="flex justify-center pt-6 pb-4">
+            {/* シェアアクション群（X, LINE, コピー） */}
+            <div className="flex flex-wrap justify-center gap-4 pt-6 pb-4 font-sans">
+              
+              {/* X シェアボタン */}
               <button
                 onClick={shareToX}
-                className="group relative flex items-center gap-3 bg-[#141414] border border-[#d4af37]/40 px-8 py-4 rounded-full overflow-hidden hover:border-[#d4af37] transition-all shadow-lg hover:shadow-[0_0_20px_rgba(212,175,55,0.2)]"
+                className="flex items-center gap-2 bg-[#141414] border border-gray-700 px-6 py-3 rounded-full hover:border-gray-400 transition-all text-gray-300 hover:text-white text-sm tracking-wider"
               >
-                <svg className="w-5 h-5 fill-white relative z-10" viewBox="0 0 24 24">
+                <svg className="w-4 h-4 fill-currentColor" viewBox="0 0 24 24">
                   <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
                 </svg>
-                <span className="text-[#d4af37] font-bold tracking-wider relative z-10 text-sm font-sans">
-                  診断結果をポストする
-                </span>
+                ポスト
               </button>
+
+              {/* LINE シェアボタン */}
+              <button
+                onClick={shareToLine}
+                className="flex items-center gap-2 bg-[#141414] border border-[#06C755]/40 px-6 py-3 rounded-full hover:border-[#06C755] transition-all text-[#06C755] text-sm tracking-wider"
+              >
+                <svg className="w-4 h-4 fill-currentColor" viewBox="0 0 24 24">
+                   <path d="M24 10.304c0-5.369-5.383-9.738-12-9.738-6.616 0-12 4.369-12 9.738 0 4.814 3.96 8.904 9.404 9.608.371.077.868.238 1.002.544.122.28-.04.856-.123 1.205-.098.411-.476 1.884-.578 2.296-.134.542.612.87 1.05.589.626-.4 3.393-2.128 4.654-3.14 3.256-2.618 5.591-5.698 5.591-8.798" />
+                </svg>
+                LINEで送る
+              </button>
+
+              {/* コピーボタン */}
+              <button
+                onClick={copyToClipboard}
+                className={`flex items-center gap-2 bg-[#141414] border px-6 py-3 rounded-full transition-all text-sm tracking-wider ${copied ? 'border-[#d4af37] text-[#d4af37]' : 'border-gray-700 text-gray-300 hover:border-gray-400'}`}
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
+                {copied ? 'コピーしました！' : 'テキストをコピー'}
+              </button>
+
             </div>
 
           </div>
