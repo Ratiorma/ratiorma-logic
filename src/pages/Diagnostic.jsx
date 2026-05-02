@@ -1,146 +1,91 @@
 import React, { useState } from 'react';
-import { motion } from 'framer-motion';
-import VideoInput from './../components/diagnostic/VideoInput';
-import DiagnosticResult from './../components/diagnostic/DiagnosticResult';
-import { extractVideoId, fetchVideoStats } from './../lib/youtubeApi';
-import { calculateCVR, determineRank } from './../lib/rankingEngine';
-import { generateAnalysis } from './../lib/analysisGenerator';
-import { isComedyContent } from './../lib/contentFilter';
+import { extractVideoId, fetchVideoStats } from '../lib/youtubeApi';
 
 export default function Diagnostic() {
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const [notComedy, setNotComedy] = useState(false);
+  const [url, setUrl] = useState('');
+  const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
+  const [error, setError] = useState('');
 
-  const handleAnalyze = async (url) => {
-    setError(null);
+  const handleAnalyze = async () => {
+    setError('');
     setResult(null);
-    setNotComedy(false);
-    setIsLoading(true);
-
-    const videoId = extractVideoId(url);
-    if (!videoId) {
-      setError('有効なYouTube URLを入力してください。');
-      setIsLoading(false);
+    if (!url) {
+      setError('YouTubeのURLを入力してください。');
       return;
     }
 
+    const videoId = extractVideoId(url);
+    if (!videoId) {
+      setError('正しいYouTubeのURLを入力してください。');
+      return;
+    }
+
+    setLoading(true);
     try {
-      const videoData = await fetchVideoStats(videoId);
-
-      if (!isComedyContent(videoData)) {
-        setNotComedy(true);
-        return;
-      }
-
-      const cvr = calculateCVR(videoData.likeCount, videoData.viewCount);
-      const rank = determineRank(videoData.viewCount, cvr);
-      const analysis = generateAnalysis(videoData, cvr, rank);
-
-      setResult({ videoData, cvr, rank, analysis });
+      const stats = await fetchVideoStats(videoId);
+      const engagement = stats.likeCount + stats.commentCount;
+      const cvr = stats.viewCount > 0 ? ((engagement / stats.viewCount) * 100).toFixed(2) : 0;
+      setResult({ ...stats, cvr });
     } catch (err) {
-      setError('サーバーとの通信に失敗しました。時間をおいて再度お試しください。');
+      setError(err.message);
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-background relative overflow-hidden">
-      <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-primary/5 rounded-full blur-3xl" />
-        <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-accent/5 rounded-full blur-3xl" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/3 rounded-full blur-[100px]" />
-      </div>
-
-      <div className="relative z-10 max-w-3xl mx-auto px-4 md:px-6 py-12 md:py-20">
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-          className="text-center mb-12"
-        >
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-primary/20 to-accent/10 border border-primary/20 mb-6">
-            <span className="text-2xl font-display font-bold text-primary">R</span>
-          </div>
-
-          <h1 className="text-3xl md:text-4xl font-serif-jp font-bold text-foreground tracking-wider mb-3">
-            <span className="text-primary">Ratiorma</span>
-          </h1>
-          <p className="text-xs md:text-sm font-display text-muted-foreground tracking-[0.3em] italic mb-2">
-            ENGAGEMENT CVR DIAGNOSTICS
-          </p>
-          <div className="h-px w-24 mx-auto bg-gradient-to-r from-transparent via-primary/50 to-transparent mt-4 mb-6" />
-          <p className="text-sm font-serif-jp text-muted-foreground/70 max-w-md mx-auto leading-relaxed">
-            YouTube動画のエンゲージメントCVRを独自のM-1相対評価アルゴリズムで診断し、戦略的分析レポートを生成します。
-          </p>
-        </motion.div>
-
-        <div className="mb-10">
-          <VideoInput onAnalyze={handleAnalyze} isLoading={isLoading} />
+    <div className="min-h-screen bg-[#0a0a0a] text-gray-100 p-6 font-sans">
+      <div className="max-w-3xl mx-auto space-y-8 mt-12">
+        <div className="text-center space-y-4">
+          <h1 className="text-5xl font-bold text-[#d4af37] tracking-widest">Ratiorma</h1>
+          <p className="text-gray-400 tracking-wider">M-1 Engagement CVR Diagnostics</p>
         </div>
 
-        {error && (
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-center mb-8"
-          >
-            <p className="text-sm font-serif-jp text-primary tracking-wide">
-              {error}
-            </p>
-          </motion.div>
-        )}
+        <div className="bg-[#1a1a1a] p-6 rounded-xl border border-[#d4af37]/30 shadow-2xl shadow-[#d4af37]/10">
+          <div className="flex flex-col md:flex-row gap-4">
+            <input
+              type="text"
+              placeholder="分析したいYouTube URLを入力..."
+              value={url}
+              onChange={(e) => setUrl(e.target.value)}
+              className="flex-1 bg-[#2a2a2a] border border-gray-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-[#d4af37] transition-colors"
+            />
+            <button
+              onClick={handleAnalyze}
+              disabled={loading}
+              className="bg-[#d4af37] text-black px-8 py-3 rounded-lg font-bold hover:bg-[#f3c13a] disabled:opacity-50 transition-colors whitespace-nowrap"
+            >
+              {loading ? '分析中...' : '診断開始'}
+            </button>
+          </div>
+          {error && <p className="text-red-400 mt-4 text-sm font-bold">{error}</p>}
+        </div>
 
-        {isLoading && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="text-center py-16"
-          >
-            <div className="inline-flex flex-col items-center gap-4">
-              <div className="relative w-12 h-12">
-                <div className="absolute inset-0 border-2 border-primary/20 rounded-full" />
-                <div className="absolute inset-0 border-2 border-transparent border-t-primary rounded-full animate-spin" />
-              </div>
-              <p className="text-sm font-serif-jp text-muted-foreground tracking-wider">
-                データを取得中...
-              </p>
-            </div>
-          </motion.div>
-        )}
-
-        {notComedy && !isLoading && (
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="text-center py-10"
-          >
-            <div className="relative inline-flex flex-col items-center">
-              <div className="absolute -inset-px bg-gradient-to-r from-primary/20 via-accent/10 to-primary/20 rounded-2xl blur-sm" />
-              <div className="relative bg-card border border-primary/25 rounded-2xl px-8 py-8 max-w-lg">
-                <div className="text-3xl mb-4">🎭</div>
-                <p className="text-sm md:text-base font-serif-jp text-primary leading-relaxed tracking-wide">
-                  対象外のコンテンツです。こちらの動画は漫才・お笑い関連動画として認識できませんでした。解析ロジック保護のため、M-1等の漫才動画のURLを入力してください。
-                </p>
-                <div className="h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent mt-5" />
-                <p className="text-xs font-display text-muted-foreground/50 italic tracking-widest mt-3">
-                  Comedy Content Only
-                </p>
+        {result && (
+          <div className="bg-[#1a1a1a] rounded-xl border border-[#d4af37]/30 overflow-hidden mt-8">
+            <div className="p-6">
+              <h2 className="text-xl font-bold mb-6 text-white border-b border-gray-800 pb-4">{result.title}</h2>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="bg-[#2a2a2a] p-4 rounded-lg text-center">
+                  <p className="text-gray-400 text-sm mb-1">再生回数</p>
+                  <p className="text-2xl font-bold text-white">{result.viewCount.toLocaleString()}</p>
+                </div>
+                <div className="bg-[#2a2a2a] p-4 rounded-lg text-center">
+                  <p className="text-gray-400 text-sm mb-1">高評価</p>
+                  <p className="text-2xl font-bold text-white">{result.likeCount.toLocaleString()}</p>
+                </div>
+                <div className="bg-[#2a2a2a] p-4 rounded-lg text-center">
+                  <p className="text-gray-400 text-sm mb-1">コメント</p>
+                  <p className="text-2xl font-bold text-white">{result.commentCount.toLocaleString()}</p>
+                </div>
+                <div className="bg-gradient-to-br from-[#d4af37] to-[#b8952d] p-4 rounded-lg text-center shadow-lg transform hover:scale-105 transition-transform">
+                  <p className="text-black/80 text-sm mb-1 font-bold">エンゲージメントCVR</p>
+                  <p className="text-3xl font-black text-black">{result.cvr}%</p>
+                </div>
               </div>
             </div>
-          </motion.div>
-        )}
-
-        {result && !isLoading && (
-          <DiagnosticResult
-            videoData={result.videoData}
-            cvr={result.cvr}
-            rank={result.rank}
-            analysis={result.analysis}
-          />
+          </div>
         )}
       </div>
     </div>
