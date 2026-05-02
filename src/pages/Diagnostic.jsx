@@ -1,27 +1,32 @@
 import React, { useState } from 'react';
 import { extractVideoId, fetchVideoStats } from '../lib/youtubeApi';
 
-// Ratiorma独自の相対評価ロジック（ボーダーラインと称号固定）
+// Ratiorma独自の相対評価ロジック（実際のM-1決勝データを反映した極限チューニング）
 const getDiagnosticResult = (viewCount, cvrStr) => {
   const cvr = parseFloat(cvrStr);
   
   if (viewCount >= 1000000) {
-    if (cvr >= 1.0) return { icon: '👑', rank: 'ユニコーン企業', sub: 'Unicorn / M-1決勝レベル', label: 'メガヒット領域（100万再生超）', text: `圧倒的なマスへの到達（${(viewCount/10000).toFixed(0)}万再生）を達成しながら、CVR ${cvr}%という驚異的なエンゲージメントを維持している稀有な事例である。一般層への「ウケ」と、お笑いフリークを唸らせる「ネタの強度」が完全に同居しており、M-1決勝の舞台において審査員と観客の双方を掌握できる完全無欠のポテンシャルを誇る。もはや単なるネタ動画の枠を超え、強固なブランドとして市場に君臨するメガ・ユニコーン銘柄である。` };
-    if (cvr >= 0.6) return { icon: '💎', rank: '優良事業', sub: 'Cash Cow / M-1・準々決勝～準決勝レベル', label: 'メガヒット領域（100万再生超）', text: `${(viewCount/10000).toFixed(0)}万再生という巨大な分母に対し、CVR ${cvr}%は非常に安定的かつ優秀なスコアである。一過性のバズ消費に終わらず、視聴者が確実にネタの本質的価値を評価し、強固な支持基盤（キャッシュカウ）を形成している。賞レースの過酷な予選を突破する地力はすでに証明済みであり、決勝進出に向けては「この組ならではの爆発的フック」を一点突破で研ぎ澄ますフェーズに入っている。` };
-    if (cvr >= 0.3) return { icon: '🌱', rank: '損益分岐点', sub: 'Break-Even Point / M-1・2回戦・3回戦レベル', label: 'メガヒット領域（100万再生超）', text: `メガヒット領域に到達し、マジョリティ層への認知拡大には成功しているものの、能動的な評価（高評価率）は市場の平均値に収束している。YouTubeのアルゴリズムによる露出恩恵を多分に受けている可能性が高く、視聴者が「コアなファン」へ転換する手前の段階（損益分岐点）に留まっている。今後は、広く見られることよりも「深く刺さる」ための、ネタの根幹となるUSP（独自の強み）の再定義が求められる。` };
+    // メガヒット領域（100万再生超）
+    // 100万回を超えて0.8%以上なら文句なしのトップオブトップ（決勝）
+    if (cvr >= 0.8) return { icon: '👑', rank: 'ユニコーン企業', sub: 'Unicorn / M-1決勝レベル', label: 'メガヒット領域（100万再生超）', text: `圧倒的なマスへの到達（${(viewCount/10000).toFixed(0)}万再生）を達成しながら、CVR ${cvr}%という驚異的なエンゲージメントを維持している稀有な事例である。一般層への「ウケ」と、お笑いフリークを唸らせる「ネタの強度」が完全に同居しており、M-1決勝の舞台において審査員と観客の双方を掌握できる完全無欠のポテンシャルを誇る。もはや単なるネタ動画の枠を超え、強固なブランドとして市場に君臨するメガ・ユニコーン銘柄である。` };
+    if (cvr >= 0.4) return { icon: '💎', rank: '優良事業', sub: 'Cash Cow / M-1・準々決勝～準決勝レベル', label: 'メガヒット領域（100万再生超）', text: `${(viewCount/10000).toFixed(0)}万再生という巨大な分母に対し、CVR ${cvr}%は非常に安定的かつ優秀なスコアである。一過性のバズ消費に終わらず、視聴者が確実にネタの本質的価値を評価し、強固な支持基盤（キャッシュカウ）を形成している。賞レースの過酷な予選を突破する地力はすでに証明済みであり、決勝進出に向けては「この組ならではの爆発的フック」を一点突破で研ぎ澄ますフェーズに入っている。` };
+    if (cvr >= 0.15) return { icon: '🌱', rank: '損益分岐点', sub: 'Break-Even Point / M-1・2回戦・3回戦レベル', label: 'メガヒット領域（100万再生超）', text: `メガヒット領域に到達し、マジョリティ層への認知拡大には成功しているものの、能動的な評価（高評価率）は市場の平均値に収束している。YouTubeのアルゴリズムによる露出恩恵を多分に受けている可能性が高く、視聴者が「コアなファン」へ転換する手前の段階（損益分岐点）に留まっている。今後は、広く見られることよりも「深く刺さる」ための、ネタの根幹となるUSP（独自の強み）の再定義が求められる。` };
     return { icon: '📉', rank: '不良債権', sub: 'Non-Performing Loan / M-1・1回戦敗退レベル', label: 'メガヒット領域（100万再生超）', text: `莫大なインプレッションを獲得しているにも関わらず、CVR ${cvr}%という数値は、ターゲット層との深刻なミスマッチを示唆している。サムネイルやタイトルによる一時的な誘引には成功しているが、コンテンツの実態が視聴者の期待値に応えられていない。現状のままでは賞レースでの評価獲得は極めて困難であり、小手先の修正ではなく、漫才のシステムそのものに対する抜本的な構造改革（リストラクチャリング）が急務である。` };
   } 
   
   if (viewCount >= 100000) {
-    if (cvr >= 2.0) return { icon: '👑', rank: 'ユニコーン企業', sub: 'Unicorn / M-1決勝レベル', label: 'ミドルヒット領域（10万再生超）', text: `10万再生を超えるリーチを持ちながら、CVR ${cvr}%という外れ値（アウトライアー）を叩き出している。これは特定のターゲット層に極めて深く、そして鋭く刺さっている証左であり、熱狂的なコミュニティが形成されつつある。この「異常な熱量」を保ったままマスへと露出を拡大できれば、一気に業界の勢力図を塗り替える大化け銘柄（ユニコーン）となる確実なポテンシャルを秘めている。` };
-    if (cvr >= 1.0) return { icon: '💎', rank: '優良事業', sub: 'Cash Cow / M-1・準々決勝～準決勝レベル', label: 'ミドルヒット領域（10万再生超）', text: `再生数とエンゲージメントのバランスが美しく最適化された、極めて健全な優良事業モデルである。視聴者の信頼が継続的に蓄積されており、M-1においても準々決勝・準決勝と堅実に駒を進める「負けない戦い」ができる実力を持つ。さらなる飛躍、すなわち決勝の舞台を掴み取るためには、既存の枠組みをあえて破壊するような「予測不能な裏切り」のスパイスが必要となる。` };
-    if (cvr >= 0.5) return { icon: '🌱', rank: '損益分岐点', sub: 'Break-Even Point / M-1・2回戦・3回戦レベル', label: 'ミドルヒット領域（10万再生超）', text: `標準的なエンゲージメント水準を確保しており、基礎的な技術力と構成力は市場に証明されている。しかし、数多いる実力派漫才師の中で「なぜ彼らでなければならないのか」という絶対的な理由付けに欠けている。現状の損益分岐点から抜け出すためには、キャラクターの深掘りや、他組には真似できない唯一無二のストロングポイントの確立にリソースを集中投下すべきである。` };
+    // ミドルヒット領域（10万再生超〜99万再生）
+    // ★ 1.0% を超えれば決勝レベル（ユニコーン）として正しく評価
+    if (cvr >= 1.0) return { icon: '👑', rank: 'ユニコーン企業', sub: 'Unicorn / M-1決勝レベル', label: 'ミドルヒット領域（10万再生超）', text: `数十万規模のリーチを持ちながら、CVR ${cvr}%という圧倒的なアウトライアー（異常値）を叩き出している。これはマスに届きつつも、特定のお笑いコア層に「深く、そして鋭く」突き刺さっている確たる証拠である。この異常な熱量を保ったまま賞レースを駆け上がれば、一気に業界の勢力図を塗り替える「ユニコーン（大化け銘柄）」となる完全無欠のポテンシャルを秘めている。` };
+    if (cvr >= 0.5) return { icon: '💎', rank: '優良事業', sub: 'Cash Cow / M-1・準々決勝～準決勝レベル', label: 'ミドルヒット領域（10万再生超）', text: `再生数とエンゲージメントのバランスが美しく最適化された、極めて健全な優良事業モデルである。視聴者の信頼が継続的に蓄積されており、M-1においても準々決勝・準決勝と堅実に駒を進める「負けない戦い」ができる実力を持つ。さらなる飛躍、すなわち決勝の舞台を掴み取るためには、既存の枠組みをあえて破壊するような「予測不能な裏切り」のスパイスが必要となる。` };
+    if (cvr >= 0.2) return { icon: '🌱', rank: '損益分岐点', sub: 'Break-Even Point / M-1・2回戦・3回戦レベル', label: 'ミドルヒット領域（10万再生超）', text: `標準的なエンゲージメント水準を確保しており、基礎的な技術力と構成力は市場に証明されている。しかし、数多いる実力派漫才師の中で「なぜ彼らでなければならないのか」という絶対的な理由付けに欠けている。現状の損益分岐点から抜け出すためには、キャラクターの深掘りや、他組には真似できない唯一無二のストロングポイントの確立にリソースを集中投下すべきである。` };
     return { icon: '📉', rank: '不良債権', sub: 'Non-Performing Loan / M-1・1回戦敗退レベル', label: 'ミドルヒット領域（10万再生超）', text: `一定の認知は得られているものの、視聴者の心を揺さぶる決定打が不足している。「とりあえず見られる」という状態から、「思わず評価ボタンを押したくなる」という能動的なフェーズへの移行デザインが欠落している。ターゲットが誰なのかが曖昧になっている可能性が高く、ペルソナの再設定と、ネタの冒頭15秒における強烈なフックの再開発が必須である。` };
   }
 
-  if (cvr >= 4.0) return { icon: '👑', rank: 'ユニコーン企業', sub: 'Unicorn / M-1決勝レベル', label: 'アーリーステージ（10万再生未満）', text: `分母となる再生数こそ発展途上（アーリーステージ）であるが、一度触れた視聴者を確実に虜にするCVR ${cvr}%という数字は、もはや「暴力的なまでの引力」である。マス向けの最適化を一切無視した、純度の高いお笑いのコアがそこに存在する。この熱狂の種火を消すことなく、戦略的なSNS露出やライブでの実績構築を掛け合わせることで、瞬く間にスターダムへと駆け上がるSSR級の原石である。` };
-  if (cvr >= 2.0) return { icon: '💎', rank: '優良事業', sub: 'Cash Cow / M-1・準々決勝～準決勝レベル', label: 'アーリーステージ（10万再生未満）', text: `初期段階のプロジェクトとしては、申し分のないエンゲージメント率を記録している。ニッチな層に深く突き刺さる「独自の世界観（コンセプチュアルな強み）」が正しく市場に評価され始めている段階だ。この確固たる支持基盤をキャッシュカウ（資金源）として足場を固めつつ、少しずつ一般層にも伝わる翻訳（チューニング）を施していくことが、次なる成長への最短ルートとなる。` };
-  if (cvr >= 0.8) return { icon: '🌱', rank: '損益分岐点', sub: 'Break-Even Point / M-1・2回戦・3回戦レベル', label: 'アーリーステージ（10万再生未満）', text: `初期段階において標準以上のCVRを獲得しており、最低限の品質保証（クオリティ・アシュアランス）はクリアしている。しかし、爆発的なバズを生み出すための「起爆剤」がまだ投下されていない。漫才の後半に向けてのボルテージの上げ方や、記憶にこびりつく強烈なパンチラインの欠如が課題であり、構成のクライマックスにおけるカタルシスの最大化を図るべきである。` };
+  // アーリーステージ（10万再生未満）
+  if (cvr >= 3.0) return { icon: '👑', rank: 'ユニコーン企業', sub: 'Unicorn / M-1決勝レベル', label: 'アーリーステージ（10万再生未満）', text: `分母となる再生数こそ発展途上（アーリーステージ）であるが、一度触れた視聴者を確実に虜にするCVR ${cvr}%という数字は、もはや「暴力的なまでの引力」である。マス向けの最適化を一切無視した、純度の高いお笑いのコアがそこに存在する。この熱狂の種火を消すことなく、戦略的なSNS露出やライブでの実績構築を掛け合わせることで、瞬く間にスターダムへと駆け上がるSSR級の原石である。` };
+  if (cvr >= 1.2) return { icon: '💎', rank: '優良事業', sub: 'Cash Cow / M-1・準々決勝～準決勝レベル', label: 'アーリーステージ（10万再生未満）', text: `初期段階のプロジェクトとしては、申し分のないエンゲージメント率を記録している。ニッチな層に深く突き刺さる「独自の世界観（コンセプチュアルな強み）」が正しく市場に評価され始めている段階だ。この確固たる支持基盤をキャッシュカウ（資金源）として足場を固めつつ、少しずつ一般層にも伝わる翻訳（チューニング）を施していくことが、次なる成長への最短ルートとなる。` };
+  if (cvr >= 0.5) return { icon: '🌱', rank: '損益分岐点', sub: 'Break-Even Point / M-1・2回戦・3回戦レベル', label: 'アーリーステージ（10万再生未満）', text: `初期段階において標準以上のCVRを獲得しており、最低限の品質保証（クオリティ・アシュアランス）はクリアしている。しかし、爆発的なバズを生み出すための「起爆剤」がまだ投下されていない。漫才の後半に向けてのボルテージの上げ方や、記憶にこびりつく強烈なパンチラインの欠如が課題であり、構成のクライマックスにおけるカタルシスの最大化を図るべきである。` };
   return { icon: '📉', rank: '不良債権', sub: 'Non-Performing Loan / M-1・1回戦敗退レベル', label: 'アーリーステージ（10万再生未満）', text: `残念ながら、現時点では市場からの能動的な評価を全く得られておらず、コンセプトレベルでの深刻なエラーが起きている。現状のまま回数を重ねてもサンクコスト（埋没費用）が膨らむばかりである。客観的なフィードバックを徹底的に収集し、「自分たちがやりたいお笑い」と「市場が求めているお笑い」の乖離を冷静に分析・すり合わせるという、痛みを伴う改革が必要不可欠だ。` };
 };
 
@@ -84,7 +89,6 @@ export default function Diagnostic() {
 
   return (
     <>
-      {/* 高級フォントの読み込みと適用スタイル */}
       <style>
         {`
           @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;700;900&family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,900;1,400&display=swap');
@@ -102,10 +106,7 @@ export default function Diagnostic() {
       <div className="min-h-screen bg-[#0a0a0a] text-gray-200 font-elegant p-4 md:p-8">
         <div className="max-w-4xl mx-auto space-y-12 mt-8">
           
-          {/* ヘッダーエリア */}
           <div className="text-center space-y-2">
-            
-            {/* Ratiorma ミニマルロゴ */}
             <div className="flex justify-center mb-6 animate-fade-in-up">
               <div className="w-16 h-16 md:w-20 md:h-20 bg-gradient-to-br from-[#1a1a1a] to-[#0a0a0a] rounded-2xl border border-[#d4af37]/30 shadow-[0_0_20px_rgba(212,175,55,0.1)] flex items-center justify-center relative overflow-hidden group">
                 <div className="absolute inset-0 bg-gradient-to-tr from-[#d4af37]/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
@@ -129,7 +130,6 @@ export default function Diagnostic() {
             </p>
           </div>
 
-          {/* 入力エリア（入力欄だけは視認性のためゴシックを残しつつスタイリッシュに） */}
           <div className="bg-[#141414] p-3 rounded-xl border border-gray-800 shadow-lg flex flex-col md:flex-row gap-3">
             <input
               type="text"
@@ -149,14 +149,12 @@ export default function Diagnostic() {
           </div>
           {error && <p className="text-red-400 text-center font-bold text-sm">{error}</p>}
 
-          {/* 診断結果エリア */}
           {result && (
             <div className="space-y-6 animate-fade-in-up">
               <div className="text-center">
                 <p className="text-[#d4af37] tracking-[0.3em] text-xs uppercase mb-6">Diagnostic Report</p>
               </div>
 
-              {/* 動画情報 */}
               <div className="flex flex-col md:flex-row gap-6 items-start mb-8">
                 <div className="w-full md:w-1/2 rounded-xl overflow-hidden shadow-2xl border border-gray-800">
                   <img src={result.thumbnail} alt={result.title} className="w-full h-auto object-cover" />
@@ -170,7 +168,6 @@ export default function Diagnostic() {
                 </div>
               </div>
 
-              {/* ランクバッジ */}
               <div className="flex justify-center mb-8 relative">
                 <div className="bg-[#121629] border border-[#2a3b75] px-16 py-8 rounded-2xl text-center shadow-[0_0_30px_rgba(42,59,117,0.3)] z-10">
                   <div className="text-4xl mb-2">{result.diagnosis.icon}</div>
@@ -189,7 +186,6 @@ export default function Diagnostic() {
                 </span>
               </div>
 
-              {/* 数値データ4連（圧倒的な美しさの数字フォント） */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div className="bg-[#141414] border border-gray-800 p-5 rounded-xl text-center hover:border-gray-600 transition-colors">
                   <p className="text-gray-500 text-xs tracking-widest mb-3">👁 確定再生回数</p>
@@ -211,7 +207,6 @@ export default function Diagnostic() {
                 </div>
               </div>
 
-              {/* 戦略分析レポート */}
               <div className="bg-[#141414] border border-[#d4af37]/30 p-8 rounded-xl mt-8 shadow-lg">
                 <div className="flex items-center gap-3 mb-6">
                   <div className="bg-[#d4af37]/10 p-2 rounded-lg border border-[#d4af37]/20">
@@ -227,9 +222,7 @@ export default function Diagnostic() {
                 </p>
               </div>
 
-              {/* シェアアクション群（X, LINE, コピー） */}
               <div className="flex flex-wrap justify-center gap-4 pt-6 pb-4">
-                
                 <button
                   onClick={shareToX}
                   className="flex items-center gap-2 bg-[#141414] border border-gray-700 px-6 py-3 rounded-full hover:border-[#d4af37] hover:text-[#d4af37] transition-all text-gray-300 text-sm tracking-wider"
@@ -257,7 +250,6 @@ export default function Diagnostic() {
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
                   {copied ? 'コピーしました！' : 'テキストをコピー'}
                 </button>
-
               </div>
 
             </div>
