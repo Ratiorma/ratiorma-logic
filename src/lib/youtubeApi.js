@@ -1,5 +1,5 @@
 // ↓ここに直接APIキーを貼り付けます
-const API_KEY = 'あなたのAPIキーをここに貼り付けます';
+const API_KEY = 'AIzaSyDAQEdcQfSbmTo28VBithf80XjfgaSK7eM';
 
 export const extractVideoId = (url) => {
   const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
@@ -11,7 +11,7 @@ export const fetchVideoStats = async (videoId) => {
   // 強制的に直接書き込んだキーを使用します
   const keyToUse = import.meta.env?.VITE_YOUTUBE_API_KEY || API_KEY;
 
-  if (!keyToUse || keyToUse === 'あなたのAPIキーをここに貼り付けます') {
+  if (!keyToUse || keyToUse === 'AIzaSyDAQEdcQfSbmTo28VBithf80XjfgaSK7eM') {
     throw new Error('APIキーが正しく入力されていません。');
   }
 
