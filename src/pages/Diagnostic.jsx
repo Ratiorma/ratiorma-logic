@@ -1,26 +1,31 @@
 import React, { useState } from 'react';
 import { extractVideoId, fetchVideoStats } from '../lib/youtubeApi';
 
-// Base44の優れた相対評価ロジックを完全再現
+// Ratiorma独自の相対評価ロジック（4つの称号に完全固定）
 const getDiagnosticResult = (viewCount, cvrStr) => {
   const cvr = parseFloat(cvrStr);
   
   if (viewCount >= 1000000) {
-    if (cvr >= 1.5) return { icon: '👑', rank: 'ユニコーン企業', sub: 'Unicorn / M-1決勝レベル', label: 'メガヒット領域（100万再生超）', text: `${(viewCount/10000).toFixed(0)}万再生の到達圏において、CVR ${cvr}%は驚異的な熱狂度。マジョリティへの浸透とコア層の獲得を両立した稀有な資産である。` };
-    if (cvr >= 0.8) return { icon: '💎', rank: '優良銘柄', sub: 'Blue Chip / M-1準決勝レベル', label: 'メガヒット領域（100万再生超）', text: `${(viewCount/10000).toFixed(0)}万再生の到達圏において、CVR ${cvr}%は安定的かつ優良な水準を示している。視聴者の共感と信頼が継続的に蓄積されており、優良銘柄としての堅実な成長ポテンシャルを備える。コンテンツの本質的な価値が市場に正しく評価されている証左である。` };
-    return { icon: '⚠️', rank: '要テコ入れ', sub: 'Need Restructuring / M-1準々決勝レベル', label: 'メガヒット領域（100万再生超）', text: '再生数はメガヒット領域にあるが、能動的なアクション率がやや低い。幅広い層にリーチしている分、コアファンへの転換導線（フック）の強化が求められる。' };
+    // メガヒット領域（100万再生超）
+    if (cvr >= 1.0) return { icon: '👑', rank: 'ユニコーン企業', sub: 'Unicorn / M-1決勝レベル', label: 'メガヒット領域（100万再生超）', text: `${(viewCount/10000).toFixed(0)}万再生の到達圏において、CVR ${cvr}%は驚異的な熱狂度。マジョリティへの浸透とコア層の獲得を両立した稀有な資産である。` };
+    if (cvr >= 0.8) return { icon: '💎', rank: '優良事業', sub: 'Cash Cow / M-1・準々決勝～準決勝レベル', label: 'メガヒット領域（100万再生超）', text: `${(viewCount/10000).toFixed(0)}万再生の到達圏において、CVR ${cvr}%は安定的かつ優良な水準を示している。視聴者の共感と信頼が継続的に蓄積されており、優良事業としての堅実な成長ポテンシャルを備える。` };
+    if (cvr >= 0.5) return { icon: '🌱', rank: '損益分岐点', sub: 'Break-Even Point / M-1・2回戦・3回戦レベル', label: 'メガヒット領域（100万再生超）', text: '再生数はメガヒット領域にあるが、能動的なアクション率が損益分岐点スレスレとなっている。幅広い層にリーチしている分、コアファンへの転換導線（フック）の強化が求められる。' };
+    return { icon: '📉', rank: '不良債権', sub: 'Non-Performing Loan / M-1・1回戦敗退レベル', label: 'メガヒット領域（100万再生超）', text: '再生数は多いが、能動的なエンゲージメント（高評価）が伴っていない。アルゴリズムによる偶発的な露出が多く、コアファンの形成に至っていないため、ネタの「掴み」の再設計が急務である。' };
   } 
   
   if (viewCount >= 100000) {
+    // ミドルヒット領域（10万再生超）
     if (cvr >= 3.0) return { icon: '👑', rank: 'ユニコーン企業', sub: 'Unicorn / M-1決勝レベル', label: 'ミドルヒット領域（10万再生超）', text: '10万再生を超えながらこの高CVRを維持している点は高く評価できる。刺さる層に極めて深く刺さっており、大化けするポテンシャルを秘めている。' };
-    if (cvr >= 0.9) return { icon: '💎', rank: '優良銘柄', sub: 'Blue Chip / M-1準決勝レベル', label: 'ミドルヒット領域（10万再生超）', text: '再生数とエンゲージメントのバランスが取れた堅実な優良銘柄。ここからさらに上位層へ抜け出すための「爆発力」が次の課題となる。' };
-    return { icon: '📉', rank: '不良債権', sub: 'Non-Performing Loan / M-1 2〜3回戦レベル', label: 'ミドルヒット領域（10万再生超）', text: '一定の露出は獲得しているが、視聴者の心を動かす決定打に欠ける。「見られる」から「評価される」フェーズへの移行が必要。' };
+    if (cvr >= 1.5) return { icon: '💎', rank: '優良事業', sub: 'Cash Cow / M-1・準々決勝～準決勝レベル', label: 'ミドルヒット領域（10万再生超）', text: '再生数とエンゲージメントのバランスが取れた堅実な優良事業。ここからさらに上位層へ抜け出すための「爆発力」が次の課題となる。' };
+    if (cvr >= 0.8) return { icon: '🌱', rank: '損益分岐点', sub: 'Break-Even Point / M-1・2回戦・3回戦レベル', label: 'ミドルヒット領域（10万再生超）', text: '標準的なエンゲージメントを獲得しており、基礎的な実力は証明されている。他との明確な差別化（USP）が今後の鍵。' };
+    return { icon: '📉', rank: '不良債権', sub: 'Non-Performing Loan / M-1・1回戦敗退レベル', label: 'ミドルヒット領域（10万再生超）', text: '一定の露出は獲得しているが、視聴者の心を動かす決定打に欠ける。「見られる」から「深く評価される」フェーズへの移行が必要。' };
   }
 
-  // 10万再生未満
-  if (cvr >= 5.0) return { icon: '🔥', rank: '超優良ベンチャー', sub: 'High-Growth Startup / M-1準決勝レベル', label: 'アーリーステージ（10万再生未満）', text: '再生数こそ発展途上だが、触れた視聴者を虜にする異常な引力を持つ。適切なマーケティングで一気に跳ねるダイヤの原石。' };
-  if (cvr >= 1.5) return { icon: '🌱', rank: '損益分岐点到達', sub: 'Break-Even / M-1 3回戦レベル', label: 'アーリーステージ（10万再生未満）', text: '標準以上のエンゲージメントを獲得しており、基礎的な実力は証明されている。他との明確な差別化（USP）が今後の鍵。' };
-  return { icon: '📉', rank: '不良債権', sub: 'Non-Performing Loan / M-1 1回戦敗退レベル', label: 'アーリーステージ（10万再生未満）', text: '現時点では市場からの能動的な評価を得られていない。ターゲット層とネタのコンセプトの根本的な再定義が急務。' };
+  // アーリーステージ（10万再生未満）
+  if (cvr >= 5.0) return { icon: '👑', rank: 'ユニコーン企業', sub: 'Unicorn / M-1決勝レベル', label: 'アーリーステージ（10万再生未満）', text: '再生数こそ発展途上だが、触れた視聴者を虜にする異常な引力を持つ。適切なマーケティングで一気に跳ねるダイヤの原石。' };
+  if (cvr >= 3.0) return { icon: '💎', rank: '優良事業', sub: 'Cash Cow / M-1・準々決勝～準決勝レベル', label: 'アーリーステージ（10万再生未満）', text: '高いエンゲージメント率を誇り、特定のターゲットへの訴求力は申し分ない。ニッチな層に深く突き刺さる「独自の世界観」が正しく評価されている。' };
+  if (cvr >= 1.0) return { icon: '🌱', rank: '損益分岐点', sub: 'Break-Even Point / M-1・2回戦・3回戦レベル', label: 'アーリーステージ（10万再生未満）', text: '標準以上のエンゲージメントを獲得しており、基礎的な実力は証明されている。ネタ後半の展開力と爆発力が今後の鍵。' };
+  return { icon: '📉', rank: '不良債権', sub: 'Non-Performing Loan / M-1・1回戦敗退レベル', label: 'アーリーステージ（10万再生未満）', text: '現時点では市場からの能動的な評価を得られていない。ターゲット層とネタのコンセプトの根本的な再定義が急務。' };
 };
 
 export default function Diagnostic() {
@@ -198,7 +203,6 @@ export default function Diagnostic() {
             {/* シェアアクション群（X, LINE, コピー） */}
             <div className="flex flex-wrap justify-center gap-4 pt-6 pb-4 font-sans">
               
-              {/* X シェアボタン */}
               <button
                 onClick={shareToX}
                 className="flex items-center gap-2 bg-[#141414] border border-gray-700 px-6 py-3 rounded-full hover:border-gray-400 transition-all text-gray-300 hover:text-white text-sm tracking-wider"
@@ -209,7 +213,6 @@ export default function Diagnostic() {
                 ポスト
               </button>
 
-              {/* LINE シェアボタン */}
               <button
                 onClick={shareToLine}
                 className="flex items-center gap-2 bg-[#141414] border border-[#06C755]/40 px-6 py-3 rounded-full hover:border-[#06C755] transition-all text-[#06C755] text-sm tracking-wider"
@@ -220,7 +223,6 @@ export default function Diagnostic() {
                 LINEで送る
               </button>
 
-              {/* コピーボタン */}
               <button
                 onClick={copyToClipboard}
                 className={`flex items-center gap-2 bg-[#141414] border px-6 py-3 rounded-full transition-all text-sm tracking-wider ${copied ? 'border-[#d4af37] text-[#d4af37]' : 'border-gray-700 text-gray-300 hover:border-gray-400'}`}
