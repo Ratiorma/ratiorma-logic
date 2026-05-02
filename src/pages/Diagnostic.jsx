@@ -25,7 +25,7 @@ const getDiagnosticResult = (viewCount, cvrStr) => {
   return { icon: '📉', rank: '不良債権', sub: 'Non-Performing Loan / M-1・1回戦敗退レベル', label: 'アーリーステージ（10万再生未満）', text: `残念ながら、現時点では市場からの能動的な評価を全く得られておらず、コンセプトレベルでの深刻なエラーが起きている。現状のまま回数を重ねてもサンクコスト（埋没費用）が膨らむばかりである。客観的なフィードバックを徹底的に収集し、「自分たちがやりたいお笑い」と「市場が求めているお笑い」の乖離を冷静に分析・すり合わせるという、痛みを伴う改革が必要不可欠だ。` };
 };
 
-// 【強固な防衛線】お笑い・漫才フィルター判定
+// お笑い・漫才フィルター判定
 const isComedyVideo = (stats) => {
   if (!stats) return true;
 
@@ -47,31 +47,30 @@ export default function Diagnostic() {
   const [error, setError] = useState('');
   const [copied, setCopied] = useState(false);
 
-  // ▼▼ 自動リサイズ用アンテナ追加 ▼▼
+  // ▼ 高さを正確に親（HTML）に伝えるロジックを修正 ▼
   useEffect(() => {
     const sendHeight = () => {
-      // 50pxの余裕を持たせて見切れを完全に防止
-      const height = document.documentElement.scrollHeight + 50; 
-      window.parent.postMessage({ type: 'resize', height: height }, '*');
+      const root = document.getElementById('ratiorma-root');
+      if (root) {
+        // min-h-screenを外したことで、中身の正確な高さだけを取得可能に
+        const height = root.offsetHeight;
+        window.parent.postMessage({ type: 'resize', height: height }, '*');
+      }
     };
 
-    // 初期ロード時に送信
     sendHeight();
 
-    // DOM（画面の要素）が変化した時（結果が出た時）に自動で高さを再送信する監視カメラ
     const resizeObserver = new ResizeObserver(() => {
       sendHeight();
     });
     
-    if (document.body) {
-      resizeObserver.observe(document.body);
+    const rootEl = document.getElementById('ratiorma-root');
+    if (rootEl) {
+      resizeObserver.observe(rootEl);
     }
 
-    return () => {
-      resizeObserver.disconnect();
-    };
+    return () => resizeObserver.disconnect();
   }, [result, error]);
-  // ▲▲ 追加ここまで ▲▲
 
   const handleAnalyze = async () => {
     setError('');
@@ -145,7 +144,8 @@ export default function Diagnostic() {
         `}
       </style>
 
-      <div className="min-h-screen bg-[#0a0a0a] text-gray-200 font-elegant p-4 md:p-8 overflow-hidden">
+      {/* ▼ min-h-screenを削除し、中身にジャストフィットさせるIDを追加 ▼ */}
+      <div id="ratiorma-root" className="bg-[#0a0a0a] text-gray-200 font-elegant p-4 md:p-8 overflow-hidden pb-12">
         <div className="max-w-4xl mx-auto space-y-12 mt-4 md:mt-8">
           
           <div className="text-center space-y-2">
@@ -213,7 +213,7 @@ export default function Diagnostic() {
           )}
 
           {result && !result.isExcluded && (
-            <div className="space-y-6 animate-fade-in-up pb-8">
+            <div className="space-y-6 animate-fade-in-up pb-4">
               <div className="text-center">
                 <p className="text-[#d4af37] tracking-[0.3em] text-xs uppercase mb-6">Diagnostic Report</p>
               </div>
@@ -285,12 +285,13 @@ export default function Diagnostic() {
                 </p>
               </div>
 
-              <div className="flex flex-wrap justify-center gap-3 md:gap-4 pt-6 pb-4">
+              <div className="flex flex-wrap justify-center gap-3 md:gap-4 pt-6 pb-2">
+                {/* ▼▼ 修正：Xロゴのテキスト色・アイコン色をピュアホワイトに！ ▼▼ */}
                 <button
                   onClick={shareToX}
-                  className="flex items-center gap-2 bg-[#141414] border border-gray-700 px-5 md:px-6 py-3 rounded-full hover:border-[#d4af37] hover:text-[#d4af37] transition-all text-gray-300 text-xs md:text-sm tracking-wider"
+                  className="flex items-center gap-2 bg-[#141414] border border-gray-700 px-5 md:px-6 py-3 rounded-full hover:border-white transition-all text-white text-xs md:text-sm tracking-wider font-sans"
                 >
-                  <svg className="w-4 h-4 fill-currentColor" viewBox="0 0 24 24">
+                  <svg className="w-4 h-4 fill-white" viewBox="0 0 24 24">
                     <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
                   </svg>
                   ポスト
@@ -298,7 +299,7 @@ export default function Diagnostic() {
 
                 <button
                   onClick={shareToLine}
-                  className="flex items-center gap-2 bg-[#141414] border border-[#06C755]/40 px-5 md:px-6 py-3 rounded-full hover:border-[#06C755] hover:bg-[#06C755]/5 transition-all text-[#06C755] text-xs md:text-sm tracking-wider"
+                  className="flex items-center gap-2 bg-[#141414] border border-[#06C755]/40 px-5 md:px-6 py-3 rounded-full hover:border-[#06C755] hover:bg-[#06C755]/5 transition-all text-[#06C755] text-xs md:text-sm tracking-wider font-sans"
                 >
                   <svg className="w-4 h-4 fill-currentColor" viewBox="0 0 24 24">
                      <path d="M24 10.304c0-5.369-5.383-9.738-12-9.738-6.616 0-12 4.369-12 9.738 0 4.814 3.96 8.904 9.404 9.608.371.077.868.238 1.002.544.122.28-.04.856-.123 1.205-.098.411-.476 1.884-.578 2.296-.134.542.612.87 1.05.589.626-.4 3.393-2.128 4.654-3.14 3.256-2.618 5.591-5.698 5.591-8.798" />
@@ -308,7 +309,7 @@ export default function Diagnostic() {
 
                 <button
                   onClick={copyToClipboard}
-                  className={`flex items-center gap-2 bg-[#141414] border px-5 md:px-6 py-3 rounded-full transition-all text-xs md:text-sm tracking-wider ${copied ? 'border-[#d4af37] text-[#d4af37] bg-[#d4af37]/10' : 'border-gray-700 text-gray-300 hover:border-gray-400'}`}
+                  className={`flex items-center gap-2 bg-[#141414] border px-5 md:px-6 py-3 rounded-full transition-all text-xs md:text-sm tracking-wider font-sans ${copied ? 'border-[#d4af37] text-[#d4af37] bg-[#d4af37]/10' : 'border-gray-700 text-gray-300 hover:border-gray-400'}`}
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
                   {copied ? 'コピーしました！' : 'テキストをコピー'}
